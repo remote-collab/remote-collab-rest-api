@@ -1,8 +1,13 @@
 package com.bmw.remotecollab.admin.rest;
 
+import com.bmw.remotecollab.admin.model.Room;
+import com.bmw.remotecollab.admin.service.OpenViduService;
+import com.bmw.remotecollab.admin.service.RoomService;
 import io.openvidu.java.client.*;
 import org.json.simple.JSONObject;
-import org.springframework.beans.factory.annotation.Value;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -16,29 +21,30 @@ import java.util.concurrent.ConcurrentHashMap;
 @RestController
 @RequestMapping("/api-sessions")
 public class SessionController {
-    OpenVidu openVidu;
+
+    private static final Logger logger = LoggerFactory.getLogger(SessionController.class);
 
     private Map<Long, Session> lessonIdSession = new ConcurrentHashMap<>();
-    private String lastSession = "";
     private Map<String, Session> sessionIdUserIdToken = new ConcurrentHashMap<>();
 
-    private String OPENVIDU_URL;
-    private String SECRET;
+    @Autowired
+    private OpenViduService openViduService;
+    @Autowired
+    private RoomService roomService;
 
-    public SessionController(@Value("${openvidu.secret}") String secret, @Value("${openvidu.url}") String openviduUrl) {
-        this.SECRET = secret;
-        this.OPENVIDU_URL = openviduUrl;
-        this.openVidu = new OpenVidu(OPENVIDU_URL, SECRET);
+
+    public SessionController() {
     }
 
     @RequestMapping(value = "/create-session", method = RequestMethod.POST)
-    public ResponseEntity<JSONObject> createSession(@RequestBody String lessonId) {
+    public ResponseEntity<JSONObject> createSession(@RequestBody CreateSessionRequest requestBody) {
         try {
-            Session session = this.openVidu.createSession();
+
+            Session session = openViduService.createSession(requestBody.customSessionId);
 
             this.sessionIdUserIdToken.put(session.getSessionId(), session);
 
-            System.out.println("Session created ...");
+            logger.info("Session created. ID=" + session.getSessionId() + ", CustomSessionId=" + requestBody.getCustomSessionId());
             showMap();
             JSONObject responseJson = new JSONObject();
             responseJson.put("sessionId", session.getSessionId());
@@ -47,58 +53,83 @@ public class SessionController {
         } catch (Exception e) {
             return getErrorResponse(e);
         }
-
     }
-
-    static int counter = 1;
 
     @RequestMapping(value = "/generate-token", method = RequestMethod.POST)
     public ResponseEntity<JSONObject> generateToken(@RequestBody String sessionId) {
 
         sessionId = sessionId.replace("%22=", "");
 
-        System.out.println("Creating token for '" + sessionId + "'");
-        Session session = this.sessionIdUserIdToken.get(sessionId);
-        OpenViduRole role =  this.lastSession.endsWith(sessionId) ? OpenViduRole.SUBSCRIBER : OpenViduRole.PUBLISHER; //  OpenViduRole.SUBSCRIBER; //
-        JSONObject responseJson = new JSONObject();
-
-        TokenOptions tokenOpts = new TokenOptions.Builder().role(role)
-                .data("SERVER=" + "TODO-user" + counter++).build();
-        this.lastSession = sessionId;
+        logger.info("Creating token for '" + sessionId + "'");
         try {
-            String token = session.generateToken(tokenOpts);
+            String token = this.openViduService.getTokenForSession(sessionId);
 
+
+            JSONObject responseJson = new JSONObject();
             responseJson.put("token", token);
 
             showMap();
 
             return new ResponseEntity<>(responseJson, HttpStatus.OK);
-        } catch (OpenViduJavaClientException e1) {
+        } catch (OpenViduJavaClientException | OpenViduHttpException e) {
             // If internal error generate an error message and return it to client
-            return getErrorResponse(e1);
-        } catch (OpenViduHttpException e2) {
-            if (404 == e2.getStatus()) {
-                // Invalid sessionId (user left unexpectedly). Session object is not valid
-                // anymore. Must clean invalid session and create a new one
-                try {
-                    this.sessionIdUserIdToken.remove(session.getSessionId());
-                    session = this.openVidu.createSession();
-                    this.sessionIdUserIdToken.put(session.getSessionId(), session);
-                    String token = session.generateToken(tokenOpts);
-                    // END IMPORTANT STUFF
-
-                    responseJson.put("token", token);
-                    showMap();
-
-                    return new ResponseEntity<>(responseJson, HttpStatus.OK);
-                } catch (OpenViduJavaClientException | OpenViduHttpException e3) {
-                    return getErrorResponse(e3);
-                }
-            } else {
-                return getErrorResponse(e2);
-            }
+            return getErrorResponse(e);
         }
     }
+
+    ////////////// NEW API /////////////////////////////
+
+    /**
+     * Create a new room to start a shared video session.
+     *
+     * @param requestNewRoom request contains the name that will be displayed during the session.
+     *
+     * @return UUID to generate the link for all participants.
+     */
+    @RequestMapping(value = "/create-room", method = RequestMethod.POST)
+    public ResponseEntity<JSONObject> createNewRoom(@RequestBody RequestNewRoom requestNewRoom){
+        String roomName = requestNewRoom.getRoomName();
+        String id = roomService.createNewRoom(roomName);
+        logger.info("Created new room '{}' with UUID={}", id, roomName);
+        JSONObject responseJson = new JSONObject();
+        responseJson.put("uuid", id);
+        return new ResponseEntity<>(responseJson, HttpStatus.OK);
+    }
+
+    /**
+     * Join an existing room. Returns an error in case the room does not exists.
+     *
+     * @param requestJoinRoom  request contains the uuid of the room.
+     *
+     * @return response contains a token to start an openvidu session.
+     */
+    @RequestMapping(value = "/join-room", method = RequestMethod.POST)
+    public ResponseEntity<JSONObject> joinRoom(@RequestBody RequestJoinRoom requestJoinRoom){
+        String roomUUID = requestJoinRoom.getRoomUUID();
+        boolean exists = roomService.doesRoomExists(roomUUID);
+        if(exists){
+            Room room = roomService.findById(roomUUID);
+            Session session = openViduService.createSession(room.getName());
+            try {
+                String token = openViduService.getTokenForSession(session);
+                JSONObject responseJson = new JSONObject();
+                responseJson.put("token", token);
+                responseJson.put("room", room.getName());
+                return new ResponseEntity<>(responseJson, HttpStatus.INTERNAL_SERVER_ERROR);
+            } catch (OpenViduJavaClientException | OpenViduHttpException e) {
+                logger.warn("Problem calling openvidu server.", e);
+                return getErrorResponse(e);
+            }
+
+        } else {
+            JSONObject responseJson = new JSONObject();
+            responseJson.put("problem", "Room does not exists.");
+            return new ResponseEntity<>(responseJson, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+
+    ////////////// internal /////////////////////////////
 
     private ResponseEntity<JSONObject> getErrorResponse(Exception e) {
         JSONObject json = new JSONObject();
@@ -109,10 +140,10 @@ public class SessionController {
     }
 
     private void showMap() {
-        System.out.println("------------------------------");
-        System.out.println(this.lessonIdSession.toString());
-        System.out.println(this.sessionIdUserIdToken.toString());
-        System.out.println("------------------------------");
+        logger.debug("------------------------------");
+        logger.debug(this.lessonIdSession.toString());
+        logger.debug(this.sessionIdUserIdToken.toString());
+        logger.debug("------------------------------");
     }
 
 }
