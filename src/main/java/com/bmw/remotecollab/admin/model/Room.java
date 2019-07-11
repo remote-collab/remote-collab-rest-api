@@ -11,7 +11,8 @@ public class Room {
     private List<Member> members = new ArrayList<>();
 
     public Room(String name){
-        id = UUID.randomUUID();
+        this.id = UUID.randomUUID();
+        this.name = name;
     }
 
     public UUID getId() {
@@ -26,10 +27,6 @@ public class Room {
         return name;
     }
 
-    public void setName(String name) {
-        this.name = name;
-    }
-
     public List<Member> getMembers() {
         return members;
     }
@@ -42,8 +39,6 @@ public class Room {
     public String toString() {
         return "Room{" +
                 "id=" + id +
-                ", name='" + name + '\'' +
-                ", members=" + members +
-                '}';
+                ", name='" + name + '}';
     }
 }

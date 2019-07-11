@@ -90,7 +90,7 @@ public class SessionController {
     public ResponseEntity<JSONObject> createNewRoom(@RequestBody RequestNewRoom requestNewRoom){
         String roomName = requestNewRoom.getRoomName();
         String id = roomService.createNewRoom(roomName);
-        logger.info("Created new room '{}' with UUID={}", id, roomName);
+        logger.info("Created new room '{}' with UUID={}", roomName, id);
         JSONObject responseJson = new JSONObject();
         responseJson.put("uuid", id);
         return new ResponseEntity<>(responseJson, HttpStatus.OK);
@@ -109,13 +109,15 @@ public class SessionController {
         boolean exists = roomService.doesRoomExists(roomUUID);
         if(exists){
             Room room = roomService.findById(roomUUID);
+            logger.debug("Found {}", room);
             Session session = openViduService.createSession(room.getName());
             try {
+                logger.debug("Created session with id: {}", session.getSessionId());
                 String token = openViduService.getTokenForSession(session);
                 JSONObject responseJson = new JSONObject();
                 responseJson.put("token", token);
-                responseJson.put("room", room.getName());
-                return new ResponseEntity<>(responseJson, HttpStatus.INTERNAL_SERVER_ERROR);
+                responseJson.put("roomName", room.getName());
+                return new ResponseEntity<>(responseJson, HttpStatus.OK);
             } catch (OpenViduJavaClientException | OpenViduHttpException e) {
                 logger.warn("Problem calling openvidu server.", e);
                 return getErrorResponse(e);
