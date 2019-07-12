@@ -1,19 +1,27 @@
 package com.bmw.remotecollab.admin.model;
 
+import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBAttribute;
+import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBHashKey;
+import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBTable;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+@DynamoDBTable(tableName = "sessionRoom")
 public class Room {
 
     private UUID id;
+
     private String name;
+
     private List<Member> members = new ArrayList<>();
 
     public Room(String name){
         id = UUID.randomUUID();
     }
 
+    @DynamoDBHashKey
     public UUID getId() {
         return id;
     }
@@ -22,6 +30,7 @@ public class Room {
         this.id = id;
     }
 
+    @DynamoDBAttribute(attributeName = "Name")
     public String getName() {
         return name;
     }
