@@ -1,118 +1,85 @@
 package com.bmw.remotecollab.admin.rest;
 
-import io.openvidu.java.client.*;
-import org.json.simple.JSONObject;
-import org.springframework.beans.factory.annotation.Value;
+import com.bmw.remotecollab.admin.model.Room;
+import com.bmw.remotecollab.admin.rest.exception.OpenViduException;
+import com.bmw.remotecollab.admin.rest.exception.ResourceNotFoundException;
+import com.bmw.remotecollab.admin.rest.requests.RequestJoinRoom;
+import com.bmw.remotecollab.admin.rest.requests.RequestNewRoom;
+import com.bmw.remotecollab.admin.rest.response.ResponseJoinRoom;
+import com.bmw.remotecollab.admin.rest.response.ResponseNewRoom;
+import com.bmw.remotecollab.admin.service.OpenViduService;
+import com.bmw.remotecollab.admin.service.RoomService;
+import io.openvidu.java.client.OpenViduHttpException;
+import io.openvidu.java.client.OpenViduJavaClientException;
+import io.openvidu.java.client.Session;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
-
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api-sessions")
+@RequestMapping("/api/v1")
 public class SessionController {
-    OpenVidu openVidu;
 
-    private Map<Long, Session> lessonIdSession = new ConcurrentHashMap<>();
-    private String lastSession = "";
-    private Map<String, Session> sessionIdUserIdToken = new ConcurrentHashMap<>();
+    private static final Logger logger = LoggerFactory.getLogger(SessionController.class);
 
-    private String OPENVIDU_URL;
-    private String SECRET;
+    private OpenViduService openViduService;
+    private RoomService roomService;
 
-    public SessionController(@Value("${openvidu.secret}") String secret, @Value("${openvidu.url}") String openviduUrl) {
-        this.SECRET = secret;
-        this.OPENVIDU_URL = openviduUrl;
-        this.openVidu = new OpenVidu(OPENVIDU_URL, SECRET);
+    @Autowired
+    public SessionController(OpenViduService openViduService, RoomService roomService){
+        this.openViduService = openViduService;
+        this.roomService = roomService;
     }
 
-    @RequestMapping(value = "/create-session", method = RequestMethod.POST)
-    public ResponseEntity<JSONObject> createSession(@RequestBody String lessonId) {
-        try {
-            Session session = this.openVidu.createSession();
-
-            this.sessionIdUserIdToken.put(session.getSessionId(), session);
-
-            System.out.println("Session created ...");
-            showMap();
-            JSONObject responseJson = new JSONObject();
-            responseJson.put("sessionId", session.getSessionId());
-
-            return new ResponseEntity<>(responseJson, HttpStatus.OK);
-        } catch (Exception e) {
-            return getErrorResponse(e);
-        }
-
+    /**
+     * Create a new room to start a shared video session.
+     *
+     * @param requestNewRoom request contains the name that will be displayed during the session.
+     *
+     * @return UUID to generate the link for all participants.
+     */
+    @PutMapping("/room")
+    public ResponseEntity<ResponseNewRoom> createNewRoom(@RequestBody RequestNewRoom requestNewRoom){
+        String roomName = requestNewRoom.getRoomName();
+        String id = roomService.createNewRoom(roomName);
+        logger.info("Created new room '{}' with UUID={}", roomName, id);
+        return new ResponseEntity<>(new ResponseNewRoom(id), HttpStatus.OK);
     }
 
-    static int counter = 1;
-
-    @RequestMapping(value = "/generate-token", method = RequestMethod.POST)
-    public ResponseEntity<JSONObject> generateToken(@RequestBody String sessionId) {
-
-        sessionId = sessionId.replace("%22=", "");
-
-        System.out.println("Creating token for '" + sessionId + "'");
-        Session session = this.sessionIdUserIdToken.get(sessionId);
-        OpenViduRole role =  this.lastSession.endsWith(sessionId) ? OpenViduRole.SUBSCRIBER : OpenViduRole.PUBLISHER; //  OpenViduRole.SUBSCRIBER; //
-        JSONObject responseJson = new JSONObject();
-
-        TokenOptions tokenOpts = new TokenOptions.Builder().role(role)
-                .data("SERVER=" + "TODO-user" + counter++).build();
-        this.lastSession = sessionId;
-        try {
-            String token = session.generateToken(tokenOpts);
-
-            responseJson.put("token", token);
-
-            showMap();
-
-            return new ResponseEntity<>(responseJson, HttpStatus.OK);
-        } catch (OpenViduJavaClientException e1) {
-            // If internal error generate an error message and return it to client
-            return getErrorResponse(e1);
-        } catch (OpenViduHttpException e2) {
-            if (404 == e2.getStatus()) {
-                // Invalid sessionId (user left unexpectedly). Session object is not valid
-                // anymore. Must clean invalid session and create a new one
+    /**
+     * Join an existing room. Returns an error in case the room does not exists.
+     *
+     * @param requestJoinRoom  request contains the uuid of the room.
+     *
+     * @return response contains a token to start an openvidu session.
+     */
+    @PostMapping("/room/join")
+    public ResponseEntity<ResponseJoinRoom> joinRoom(@RequestBody RequestJoinRoom requestJoinRoom) throws ResourceNotFoundException, OpenViduException {
+        String roomUUID = requestJoinRoom.getRoomUUID();
+        boolean exists = roomService.doesRoomExists(roomUUID);
+        if(exists){
+            Room room = roomService.findById(roomUUID);
+            logger.debug("Found {}", room);
+            Session session = openViduService.createSession(room.getName());
+            if(session != null) {
                 try {
-                    this.sessionIdUserIdToken.remove(session.getSessionId());
-                    session = this.openVidu.createSession();
-                    this.sessionIdUserIdToken.put(session.getSessionId(), session);
-                    String token = session.generateToken(tokenOpts);
-                    // END IMPORTANT STUFF
-
-                    responseJson.put("token", token);
-                    showMap();
-
-                    return new ResponseEntity<>(responseJson, HttpStatus.OK);
-                } catch (OpenViduJavaClientException | OpenViduHttpException e3) {
-                    return getErrorResponse(e3);
+                    logger.debug("Created session with id: {}", session.getSessionId());
+                    String token = openViduService.getTokenForSession(session);
+                    return new ResponseEntity<>(new ResponseJoinRoom(room.getName(), token), HttpStatus.OK);
+                } catch (OpenViduJavaClientException | OpenViduHttpException e) {
+                    logger.warn("Problem calling openvidu server.", e);
+                    throw new OpenViduException("Problem calling openvidu server.");
                 }
             } else {
-                return getErrorResponse(e2);
+                throw new ResourceNotFoundException("OpenVidu connection not working.");
             }
+        } else {
+            throw new ResourceNotFoundException("Room does not exists.");
         }
     }
 
-    private ResponseEntity<JSONObject> getErrorResponse(Exception e) {
-        JSONObject json = new JSONObject();
-        json.put("cause", e.getCause());
-        json.put("error", e.getMessage());
-        json.put("exception", e.getClass());
-        return new ResponseEntity<>(json, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
-
-    private void showMap() {
-        System.out.println("------------------------------");
-        System.out.println(this.lessonIdSession.toString());
-        System.out.println(this.sessionIdUserIdToken.toString());
-        System.out.println("------------------------------");
-    }
 
 }
