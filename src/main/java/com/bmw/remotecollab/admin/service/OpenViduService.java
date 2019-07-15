@@ -15,7 +15,7 @@ public class OpenViduService {
 
     private static final Logger logger = LoggerFactory.getLogger(OpenViduService.class);
 
-    private OpenVidu openVidu;
+    private final OpenVidu openVidu;
 
     private Map<String, Session> sessionStorageCache = new ConcurrentHashMap<>();
 
