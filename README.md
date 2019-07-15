@@ -10,4 +10,18 @@ Admin backend to create new rooms. Containing security logic.
 
 [mvn](https://maven.apache.org/download.cgi) needs to be installed on the local machine. 
 
+This project uses lombok.
+[Lombok](https://www.baeldung.com/lombok-ide) installation instructions for your IDE. 
+
+
+
+## Start OpenVidu server 
+
+'docker run -p 4443:4443 --rm \
+    -v /var/run/docker.sock:/var/run/docker.sock \
+    -v /PATH/TO/VIDEO/FILES:/PATH/TO/VIDEO/FILES \
+    -e openvidu.recording=true \
+    -e openvidu.recording.path=/PATH/TO/VIDEO/FILES \
+openvidu/openvidu-server-kms:2.10.0'
+
 
