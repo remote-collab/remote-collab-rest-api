@@ -23,9 +23,26 @@ public class OpenViduService {
         this.openVidu = new OpenVidu(openviduUrl, secret);
     }
 
+    public String startRecording( String sessionId ) throws OpenViduJavaClientException, OpenViduHttpException {
+        RecordingProperties properties = new RecordingProperties.Builder()
+                .outputMode(Recording.OutputMode.COMPOSED)
+                .name("MY_RECORDING_NAME")
+                .build();
+        Recording recording = openVidu.startRecording(sessionId, properties); // Starts recording
+        logger.info("Start recording: {}", recording);
+        return recording.getId();
+    }
+
+    public void stopRecording(String recordingId) throws OpenViduJavaClientException, OpenViduHttpException {
+        Recording recording = openVidu.stopRecording(recordingId); // Stops recording
+        logger.info("Stopped recording: {}", recording);
+    }
+
     public Session createSession(String roomName) {
         SessionProperties.Builder customProperties = new SessionProperties.Builder();
         customProperties.customSessionId(roomName);
+        customProperties.recordingMode(RecordingMode.MANUAL);
+        customProperties.defaultOutputMode(Recording.OutputMode.INDIVIDUAL);
         Session session = null;
         try {
             session = this.openVidu.createSession(customProperties.build());

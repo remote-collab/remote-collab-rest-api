@@ -14,10 +14,13 @@ import java.util.concurrent.ConcurrentHashMap;
 public class RoomService {
 
     private static Map<UUID, Room> localRoomCache = new ConcurrentHashMap<>();
+    private static Map<String, Room> localRoomCacheName = new ConcurrentHashMap<>();
+
 
     public String createNewRoom(String roomName){
         Room room = new Room(roomName);
         this.localRoomCache.put(room.getId(), room);
+        this.localRoomCacheName.put(roomName, room);
         return room.getId().toString();
     }
 
@@ -28,4 +31,8 @@ public class RoomService {
     public Room findById(String roomUUID) {
         return this.localRoomCache.get(UUID.fromString(roomUUID));
     }
+    public Room findByName(String name) {
+        return this.localRoomCacheName.get(name);
+    }
+
 }

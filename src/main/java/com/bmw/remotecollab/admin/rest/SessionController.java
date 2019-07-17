@@ -68,7 +68,7 @@ public class SessionController {
                 try {
                     logger.debug("Created session with id: {}", session.getSessionId());
                     String token = openViduService.getTokenForSession(session);
-                    return new ResponseEntity<>(new ResponseJoinRoom(room.getName(), token), HttpStatus.OK);
+                    return new ResponseEntity<>(new ResponseJoinRoom(room.getName(), token, session.getSessionId()), HttpStatus.OK);
                 } catch (OpenViduJavaClientException | OpenViduHttpException e) {
                     logger.warn("Problem calling openvidu server.", e);
                     throw new OpenViduException("Problem calling openvidu server.");
@@ -79,6 +79,19 @@ public class SessionController {
         } else {
             throw new ResourceNotFoundException("Room does not exists.");
         }
+    }
+
+    @PostMapping("/recordings/start/{sessionId}")
+    public ResponseEntity<String> startRecording(@PathVariable String sessionId) throws OpenViduJavaClientException, OpenViduHttpException{
+        logger.info("startRecording session {}", sessionId);
+        String recordingId = this.openViduService.startRecording(sessionId);
+        return new ResponseEntity<>(recordingId, HttpStatus.OK);
+    }
+
+    @PostMapping("/recordings/stop/{recordingId}")
+    public ResponseEntity<Void> createNewRoom(@PathVariable String recordingId) throws OpenViduJavaClientException, OpenViduHttpException {
+        this.openViduService.stopRecording(recordingId);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
 
