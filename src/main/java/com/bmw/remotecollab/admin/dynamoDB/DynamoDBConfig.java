@@ -30,7 +30,7 @@ public class DynamoDBConfig {
     public AmazonDynamoDB amazonDynamoDB() {
         return AmazonDynamoDBClientBuilder
                 .standard()
-                .withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration("http://dynamodb-session:8000/", "local"))
+                .withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(dynamoDBEndpoint, "local"))
                 .withCredentials(amazonAWSCredentialsProvider())
                 .build();
     }

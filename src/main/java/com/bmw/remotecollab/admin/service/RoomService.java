@@ -5,10 +5,6 @@ import com.bmw.remotecollab.admin.model.Room;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.Map;
-import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
-
 /**
  * Local implementation. No db storage up until now.
  */
@@ -18,25 +14,18 @@ public class RoomService {
     @Autowired
     RoomRepository roomRepository;
 
-    private static Map<UUID, Room> localRoomCache = new ConcurrentHashMap<>();
-
-    public String createNewRoom(String roomName){
+    public String createNewRoom(String roomName) {
 
         Room room = new Room(roomName);
         roomRepository.save(room);
-        this.localRoomCache.put(room.getId(), room);
-        return room.getId().toString();
+        return room.getId();
     }
 
-    public boolean doesRoomExists(String id){
-        return this.localRoomCache.containsKey(UUID.fromString(id));
+    public boolean doesRoomExists(String id) {
+        return roomRepository.existsById(id);
     }
 
     public Room findById(String roomUUID) {
-
-            return roomRepository.findById(roomUUID).get();
-
-
-//        return this.localRoomCache.get(UUID.fromString(roomUUID));
+        return roomRepository.findById(roomUUID).get();
     }
 }
