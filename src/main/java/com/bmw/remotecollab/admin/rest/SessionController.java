@@ -20,6 +20,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/v1")
 public class SessionController {
@@ -45,7 +47,8 @@ public class SessionController {
     @PutMapping("/room")
     public ResponseEntity<ResponseNewRoom> createNewRoom(@RequestBody RequestNewRoom requestNewRoom){
         String roomName = requestNewRoom.getRoomName();
-        String id = roomService.createNewRoom(roomName);
+        List<String> emails = requestNewRoom.getEmails();
+        String id = roomService.createNewRoom(roomName, emails);
         logger.info("Created new room '{}' with UUID={}", roomName, id);
         return new ResponseEntity<>(new ResponseNewRoom(id), HttpStatus.OK);
     }
