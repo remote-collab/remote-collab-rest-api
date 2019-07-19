@@ -8,7 +8,6 @@ import com.amazonaws.services.simpleemail.AmazonSimpleEmailServiceClientBuilder;
 import com.amazonaws.services.simpleemail.model.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -18,6 +17,8 @@ public class AwsSenderService {
 
     private AmazonSimpleEmailService sesClient;
 
+    private boolean initialized = false;
+
     public AwsSenderService() {
         try {
             AWSCredentialsProvider awsCreds = new ClasspathPropertiesFileCredentialsProvider();
@@ -25,6 +26,7 @@ public class AwsSenderService {
                     .withCredentials(awsCreds)
                     .withRegion(Regions.EU_CENTRAL_1)
                     .build();
+            this.initialized = true;
         } catch (Exception ex) {
             logger.warn("Problem calling AWS SES.", ex);
         }
@@ -33,31 +35,37 @@ public class AwsSenderService {
     }
 
     public void sendEmail(Email email){
-        // Construct an object to contain the recipient address.
-        Destination destination = new Destination().withToAddresses(email.getTo());
-        //set cc & bcc addresses
-        if (email.getCc() != null && email.getCc().size() > 0) {
-            destination.withCcAddresses(email.getCc());
-        }
-        if (email.getBcc() != null && email.getBcc().size() > 0) {
-            destination.withBccAddresses(email.getBcc());
-        }
-        // Create the subject and body of the message.
-        Content subject = new Content().withData(email.getSubject());
-        Content textBody = new Content().withData(email.getBody());
-        Body body = email.isHtml() ? new Body().withHtml(textBody) : new Body().withText(textBody);
+        if(initialized) {
+            // Construct an object to contain the recipient address.
+            Destination destination = new Destination().withToAddresses(email.getTo());
+            //set cc & bcc addresses
+            if (email.getCc() != null && email.getCc().size() > 0) {
+                destination.withCcAddresses(email.getCc());
+            }
+            if (email.getBcc() != null && email.getBcc().size() > 0) {
+                destination.withBccAddresses(email.getBcc());
+            }
+            // Create the subject and body of the message.
+            Content subject = new Content().withData(email.getSubject());
+            Content textBody = new Content().withData(email.getBody());
+            Body body = email.isHtml() ? new Body().withHtml(textBody) : new Body().withText(textBody);
 
-        // Create a message with the specified subject and body.
-        Message message = new Message().withSubject(subject).withBody(body);
-        // Assemble the email.
-        SendEmailRequest request = new SendEmailRequest().withSource(email.getFrom())
-                .withReplyToAddresses(email.getFrom())
-                .withDestination(destination)
-                .withMessage(message);
-        // Send the email.
-        SendEmailResult result = sesClient.sendEmail(request);
-        logger.info(result.toString());
-        logger.info("Sent email via aws ses service. ID={}", result.getMessageId());
+            // Create a message with the specified subject and body.
+            Message message = new Message().withSubject(subject).withBody(body);
+            // Assemble the email.
+            SendEmailRequest request = new SendEmailRequest().withSource(email.getFrom())
+                    .withReplyToAddresses(email.getFrom())
+                    .withDestination(destination)
+                    .withMessage(message);
+            // Send the email.
+            try {
+                SendEmailResult result = sesClient.sendEmail(request);
+                logger.info(result.toString());
+                logger.info("Sent email via aws ses service. ID={}", result.getMessageId());
+            } catch (AmazonSimpleEmailServiceException aex){
+                logger.warn("Email could not be send. {}", aex.getMessage());
+            }
+        }
     }
 
 }

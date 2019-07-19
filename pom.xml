@@ -117,6 +117,12 @@
             <version>1.6.1</version>
         </dependency>
 
+        <!-- Template engine for email bodies -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-thymeleaf</artifactId>
+        </dependency>
+
     </dependencies>
 
     <build>
