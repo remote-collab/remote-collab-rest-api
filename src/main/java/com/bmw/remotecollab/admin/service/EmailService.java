@@ -29,7 +29,6 @@ public class EmailService {
 
         String subject = "Testsubject";
         String body = buildBody(roomId);
-        logger.info("Email: {}", body);
 
         Email.EmailBuilder emailBuilder = Email.builder();
         emailBuilder.from(From.NO_REPLY);
