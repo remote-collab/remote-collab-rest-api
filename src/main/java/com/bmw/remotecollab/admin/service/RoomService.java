@@ -1,11 +1,9 @@
 package com.bmw.remotecollab.admin.service;
 
+import com.bmw.remotecollab.admin.dynamoDB.RoomRepository;
 import com.bmw.remotecollab.admin.model.Room;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import java.util.Map;
-import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Local implementation. No db storage up until now.
@@ -13,19 +11,21 @@ import java.util.concurrent.ConcurrentHashMap;
 @Service
 public class RoomService {
 
-    private static Map<UUID, Room> localRoomCache = new ConcurrentHashMap<>();
+    @Autowired
+    RoomRepository roomRepository;
 
-    public String createNewRoom(String roomName){
+    public String createNewRoom(String roomName) {
+
         Room room = new Room(roomName);
-        this.localRoomCache.put(room.getId(), room);
-        return room.getId().toString();
+        roomRepository.save(room);
+        return room.getId();
     }
 
-    public boolean doesRoomExists(String id){
-        return this.localRoomCache.containsKey(UUID.fromString(id));
+    public boolean doesRoomExists(String id) {
+        return roomRepository.existsById(id);
     }
 
     public Room findById(String roomUUID) {
-        return this.localRoomCache.get(UUID.fromString(roomUUID));
+        return roomRepository.findById(roomUUID).get();
     }
 }

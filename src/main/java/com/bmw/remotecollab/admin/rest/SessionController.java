@@ -12,6 +12,7 @@ import com.bmw.remotecollab.admin.service.RoomService;
 import io.openvidu.java.client.OpenViduHttpException;
 import io.openvidu.java.client.OpenViduJavaClientException;
 import io.openvidu.java.client.Session;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,6 +60,7 @@ public class SessionController {
     @PostMapping("/room/join")
     public ResponseEntity<ResponseJoinRoom> joinRoom(@RequestBody RequestJoinRoom requestJoinRoom) throws ResourceNotFoundException, OpenViduException {
         String roomUUID = requestJoinRoom.getRoomUUID();
+        logger.debug(roomUUID);
         boolean exists = roomService.doesRoomExists(roomUUID);
         if(exists){
             Room room = roomService.findById(roomUUID);
