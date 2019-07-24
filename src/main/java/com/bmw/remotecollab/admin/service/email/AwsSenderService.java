@@ -25,7 +25,7 @@ public class AwsSenderService {
             AWSCredentialsProvider awsCreds = new ClasspathPropertiesFileCredentialsProvider();
             sesClient = AmazonSimpleEmailServiceClientBuilder.standard()
                     .withCredentials(awsCreds)
-                    .withRegion(Regions.EU_CENTRAL_1)
+                    .withRegion(Regions.EU_WEST_1)
                     .build();
             this.initialized = true;
         } catch (Exception ex) {
