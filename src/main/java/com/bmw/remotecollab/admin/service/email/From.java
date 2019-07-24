@@ -2,7 +2,7 @@ package com.bmw.remotecollab.admin.service.email;
 
 public enum From {
 
-    NO_REPLY("noreply@mysestest.com", "My SES Test"),
+    NO_REPLY("noreply@openvidu.viper.bmw.cloud", "My SES Test"),
     SUPPORT("support@mysestest.com", "My SES Support Support");
 
     private final String email;
