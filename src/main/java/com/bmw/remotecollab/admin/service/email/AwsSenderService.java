@@ -1,5 +1,6 @@
 package com.bmw.remotecollab.admin.service.email;
 
+import com.amazonaws.SdkClientException;
 import com.amazonaws.auth.AWSCredentialsProvider;
 import com.amazonaws.auth.ClasspathPropertiesFileCredentialsProvider;
 import com.amazonaws.regions.Regions;
@@ -62,7 +63,7 @@ public class AwsSenderService {
                 SendEmailResult result = sesClient.sendEmail(request);
                 logger.info(result.toString());
                 logger.info("Sent email via aws ses service. ID={}", result.getMessageId());
-            } catch (AmazonSimpleEmailServiceException aex){
+            } catch (SdkClientException aex){
                 logger.warn("Email could not be send. {}", aex.getMessage());
             }
         }
