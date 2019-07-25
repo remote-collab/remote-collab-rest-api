@@ -25,9 +25,9 @@ public class EmailService {
     private TemplateEngine templateEngine;
 
     public void sendInvitationEmail(String roomId, List<Member> members){
-        logger.info("Email sending not implemented yet. Room: {} - Members: {}", roomId, members);
+        logger.info("Sending invitation emails for Room: {} - Members: {}", roomId, members);
 
-        String subject = "Testsubject";
+        String subject = "Attend online meeting";
         String body = buildBody(roomId);
 
         Email.EmailBuilder emailBuilder = Email.builder();
@@ -35,7 +35,7 @@ public class EmailService {
         emailBuilder.to(members.stream().map(Member::getEmail).collect(Collectors.toList()));
         emailBuilder.subject(subject);
         emailBuilder.body(body);
-        emailBuilder.html(false);
+        emailBuilder.html(true);
 
         awsSenderService.sendEmail(emailBuilder.build());
     }

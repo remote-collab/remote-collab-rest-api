@@ -23,6 +23,7 @@ public class AwsSenderService {
     public AwsSenderService() {
         try {
             AWSCredentialsProvider awsCreds = new ClasspathPropertiesFileCredentialsProvider();
+
             sesClient = AmazonSimpleEmailServiceClientBuilder.standard()
                     .withCredentials(awsCreds)
                     .withRegion(Regions.EU_WEST_1)
@@ -61,7 +62,6 @@ public class AwsSenderService {
             // Send the email.
             try {
                 SendEmailResult result = sesClient.sendEmail(request);
-                logger.info(result.toString());
                 logger.info("Sent email via aws ses service. ID={}", result.getMessageId());
             } catch (SdkClientException aex){
                 logger.warn("Email could not be send. {}", aex.getMessage());
