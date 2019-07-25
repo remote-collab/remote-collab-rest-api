@@ -44,7 +44,7 @@ public class SessionController {
      *
      * @return UUID to generate the link for all participants.
      */
-    @PutMapping("/room")
+    @PostMapping("/room")
     public ResponseEntity<ResponseNewRoom> createNewRoom(@RequestBody RequestNewRoom requestNewRoom){
         String roomName = requestNewRoom.getRoomName();
         List<String> emails = requestNewRoom.getEmails();
