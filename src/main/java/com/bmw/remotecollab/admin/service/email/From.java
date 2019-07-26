@@ -2,8 +2,7 @@ package com.bmw.remotecollab.admin.service.email;
 
 public enum From {
 
-    NO_REPLY("michael.thiem@bmw.de", "Michael Thiem"),
-    SUPPORT("support@mysestest.com", "My SES Support Support");
+    NO_REPLY("noreply.viper-aws-ses@list.bmw.com", "Viper Remote Collab");
 
     private final String email;
     private final String name;
