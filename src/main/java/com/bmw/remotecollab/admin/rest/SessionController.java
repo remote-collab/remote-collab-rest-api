@@ -21,7 +21,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/v1")
 public class SessionController {
 
     private static final Logger logger = LoggerFactory.getLogger(SessionController.class);
@@ -83,5 +82,9 @@ public class SessionController {
         }
     }
 
+    @GetMapping("/status")
+    public String getStatus(){
+        return "up";
+    }
 
 }

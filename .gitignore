@@ -40,3 +40,7 @@ yarn-error.log*
 # maven
 /out
 /target
+
+*.crt
+*.key
+*.p12

@@ -1,4 +1,4 @@
-FROM java:8-jdk
+FROM openjdk:8-jre-alpine
 
 ENV SERVICE_NAME viper-service-remote-collab-admin
 
