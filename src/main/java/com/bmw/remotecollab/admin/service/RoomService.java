@@ -14,10 +14,14 @@ import java.util.List;
 @Service
 public class RoomService {
 
+    private final RoomRepository roomRepository;
+    private final EmailService emailService;
+
     @Autowired
-    private RoomRepository roomRepository;
-    @Autowired
-    private EmailService emailService;
+    public RoomService(RoomRepository roomRepository, EmailService emailService) {
+        this.roomRepository = roomRepository;
+        this.emailService = emailService;
+    }
 
     public String createNewRoom(String roomName, List<String> emails) {
 

@@ -10,11 +10,11 @@ public class From {
         this.name = name;
     }
 
-    public String getEmail() {
+    String getEmail() {
         return email;
     }
 
-    public String getName() {
+    String getName() {
         return name;
     }
 }
