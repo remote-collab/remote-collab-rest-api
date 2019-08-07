@@ -7,6 +7,7 @@ import com.bmw.remotecollab.admin.service.email.From;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
@@ -19,10 +20,19 @@ public class EmailService {
 
     private static final Logger logger = LoggerFactory.getLogger(EmailService.class);
 
+    private final String fromEmail;
+    private final String fromEmailName;
+    private final String linkUrl;
     @Autowired
     private AwsSenderService awsSenderService;
     @Autowired
     private TemplateEngine templateEngine;
+
+    public EmailService(@Value("${email.service.from}") String fromEmail, @Value("${email.service.from.name}") String fromEmailName, @Value("${email.service.link.url}") String linkUrl) {
+        this.fromEmail = fromEmail;
+        this.fromEmailName = fromEmailName;
+        this.linkUrl = linkUrl;
+    }
 
     public void sendInvitationEmail(String roomId, List<Member> members){
         logger.info("Sending invitation emails for Room: {} - Members: {}", roomId, members);
@@ -31,7 +41,7 @@ public class EmailService {
         String body = buildBody(roomId);
 
         Email.EmailBuilder emailBuilder = Email.builder();
-        emailBuilder.from(From.NO_REPLY);
+        emailBuilder.from(new From(this.fromEmail, this.fromEmailName));
         emailBuilder.to(members.stream().map(Member::getEmail).collect(Collectors.toList()));
         emailBuilder.subject(subject);
         emailBuilder.body(body);
@@ -42,7 +52,7 @@ public class EmailService {
 
     public String buildBody(String roomId) {
         Context context = new Context();
-        String url = "https://localhost:8080/#/session/" + roomId;
+        String url = this.linkUrl + roomId;
         context.setVariable("url", url);
         return templateEngine.process("mailTemplate", context);
     }
