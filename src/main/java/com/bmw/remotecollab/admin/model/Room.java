@@ -18,7 +18,7 @@ import java.util.UUID;
 @ToString
 public class Room {
 
-    @DynamoDBHashKey
+    @DynamoDBHashKey(attributeName = "Id")
     private String id;
 
     @DynamoDBAttribute(attributeName = "Name")
