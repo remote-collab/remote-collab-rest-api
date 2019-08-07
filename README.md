@@ -15,13 +15,10 @@ This project uses lombok.
 
 
 
-## Start OpenVidu server 
+## Start Applikation 
+Follow instructions in the 
+[UI Repository ](https://github.com/visual-perceptibility/viper-ui-remote-collab-admin/blob/master/README.md "README UI Component") 
 
-'docker run -p 4443:4443 --rm \
-    -v /var/run/docker.sock:/var/run/docker.sock \
-    -v /PATH/TO/VIDEO/FILES:/PATH/TO/VIDEO/FILES \
-    -e openvidu.recording=true \
-    -e openvidu.recording.path=/PATH/TO/VIDEO/FILES \
-openvidu/openvidu-server-kms:2.10.0'
+
 
 
