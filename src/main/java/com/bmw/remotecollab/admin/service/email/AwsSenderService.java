@@ -66,6 +66,8 @@ public class AwsSenderService {
             } catch (SdkClientException aex){
                 logger.warn("Email could not be send. {}", aex.getMessage());
             }
+        } else {
+            logger.info("No email will be sent since the client could not be initialized.");
         }
     }
 
