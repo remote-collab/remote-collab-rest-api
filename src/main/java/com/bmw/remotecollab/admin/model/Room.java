@@ -18,10 +18,10 @@ import java.util.UUID;
 @ToString
 public class Room {
 
-    @DynamoDBHashKey(attributeName = "Id")
+    @DynamoDBHashKey
     private String id;
 
-    @DynamoDBAttribute(attributeName = "Name")
+    @DynamoDBAttribute(attributeName = "name")
     private String name;
 
     private List<Member> members = new ArrayList<>();
