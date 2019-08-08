@@ -1,6 +1,5 @@
 package com.bmw.remotecollab.admin.config;
 
-import com.bmw.remotecollab.admin.rest.SessionController;
 import com.bmw.remotecollab.admin.rest.exception.ErrorDetails;
 import com.bmw.remotecollab.admin.rest.exception.ResourceNotFoundException;
 import org.slf4j.Logger;
@@ -16,7 +15,7 @@ import java.util.Date;
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
-    private static final Logger logger = LoggerFactory.getLogger(SessionController.class);
+    private static final Logger logger = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<?> resourceNotFoundException(ResourceNotFoundException ex, WebRequest request) {

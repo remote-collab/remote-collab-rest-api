@@ -1,5 +1,6 @@
 package com.bmw.remotecollab.admin.service;
 
+import com.bmw.remotecollab.admin.model.Room;
 import io.openvidu.java.client.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -7,6 +8,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -23,12 +26,13 @@ public class OpenViduService {
         this.openVidu = new OpenVidu(openviduUrl, secret);
     }
 
-    public String startRecording( String sessionId ) throws OpenViduJavaClientException, OpenViduHttpException {
+    public String startRecording( Room room ) throws OpenViduJavaClientException, OpenViduHttpException {
+        String dateTime = LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME);
         RecordingProperties properties = new RecordingProperties.Builder()
                 .outputMode(Recording.OutputMode.COMPOSED)
-                .name("MY_RECORDING_NAME")
+                .name(dateTime)
                 .build();
-        Recording recording = openVidu.startRecording(sessionId, properties); // Starts recording
+        Recording recording = openVidu.startRecording(room.getId(), properties); // Starts recording
         logger.info("Start recording: {}", recording);
         return recording.getId();
     }
