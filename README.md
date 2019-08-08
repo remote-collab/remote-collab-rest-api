@@ -25,3 +25,11 @@ This project uses lombok.
 openvidu/openvidu-server-kms:2.10.0'
 
 
+### From the documentation
+
+IMPORTANT! /PATH/TO/VIDEO/FILES must be the same in property openvidu.recording.path=/PATH/TO/VIDEO/FILES and in both sides of flag -v /PATH/TO/VIDEO/FILES:/PATH/TO/VIDEO/FILES
+
+Working example on windows: 
+docker run -p 4443:4443 --rm -v /var/run/docker.sock:/var/run/docker.sock -v /c/temp:/c/temp -e openvidu.recording=true -e openvidu.recording.path=/c/temp openvidu/openvidu-server-kms:2.10.0
+
+
