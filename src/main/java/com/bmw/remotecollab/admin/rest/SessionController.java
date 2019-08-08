@@ -1,8 +1,6 @@
 package com.bmw.remotecollab.admin.rest;
 
-import com.amazonaws.Response;
 import com.bmw.remotecollab.admin.model.Recording;
-import com.bmw.remotecollab.admin.model.Room;
 import com.bmw.remotecollab.admin.rest.exception.OpenViduException;
 import com.bmw.remotecollab.admin.rest.exception.ResourceNotFoundException;
 import com.bmw.remotecollab.admin.rest.requests.RequestJoinRoom;
@@ -14,8 +12,6 @@ import com.bmw.remotecollab.admin.service.RecordingService;
 import com.bmw.remotecollab.admin.service.RoomService;
 import io.openvidu.java.client.OpenViduHttpException;
 import io.openvidu.java.client.OpenViduJavaClientException;
-import io.openvidu.java.client.Session;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
