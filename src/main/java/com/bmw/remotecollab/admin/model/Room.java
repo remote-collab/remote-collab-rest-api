@@ -27,12 +27,18 @@ public class Room {
 
     private List<Member> members = new ArrayList<>();
 
+    private List<Recording> recordings = new ArrayList<>();
+
     public Room(String name){
         this.id = UUID.randomUUID().toString();
         this.name = name;
     }
 
     public Room(){
+    }
+
+    public void addRecording(Recording recording){
+        this.recordings.add(recording);
     }
 
 }

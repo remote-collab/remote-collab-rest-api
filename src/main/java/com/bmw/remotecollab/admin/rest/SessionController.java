@@ -1,6 +1,7 @@
 package com.bmw.remotecollab.admin.rest;
 
 import com.amazonaws.Response;
+import com.bmw.remotecollab.admin.model.Recording;
 import com.bmw.remotecollab.admin.model.Room;
 import com.bmw.remotecollab.admin.rest.exception.OpenViduException;
 import com.bmw.remotecollab.admin.rest.exception.ResourceNotFoundException;
@@ -9,6 +10,7 @@ import com.bmw.remotecollab.admin.rest.requests.RequestNewRoom;
 import com.bmw.remotecollab.admin.rest.response.ResponseJoinRoom;
 import com.bmw.remotecollab.admin.rest.response.ResponseNewRoom;
 import com.bmw.remotecollab.admin.service.OpenViduService;
+import com.bmw.remotecollab.admin.service.RecordingService;
 import com.bmw.remotecollab.admin.service.RoomService;
 import io.openvidu.java.client.OpenViduHttpException;
 import io.openvidu.java.client.OpenViduJavaClientException;
@@ -29,11 +31,13 @@ public class SessionController {
 
     private OpenViduService openViduService;
     private RoomService roomService;
+    private RecordingService recordingService;
 
     @Autowired
-    public SessionController(OpenViduService openViduService, RoomService roomService){
+    public SessionController(OpenViduService openViduService, RoomService roomService, RecordingService recordingService){
         this.openViduService = openViduService;
         this.roomService = roomService;
+        this.recordingService = recordingService;
     }
 
     /**
@@ -61,46 +65,21 @@ public class SessionController {
     @PostMapping("/room/join")
     public ResponseEntity<ResponseJoinRoom> joinRoom(@RequestBody RequestJoinRoom requestJoinRoom) throws ResourceNotFoundException, OpenViduException {
         String roomUUID = requestJoinRoom.getRoomUUID();
-        logger.debug(roomUUID);
-        boolean exists = roomService.doesRoomExists(roomUUID);
-        if(exists){
-            Room room = roomService.findById(roomUUID);
-            logger.debug("Found {}", room);
-            Session session = openViduService.createSession(room.getId());
-            if(session != null) {
-                try {
-                    logger.debug("Created session with id: {}", session.getSessionId());
-                    String token = openViduService.getTokenForSession(session);
-                    return new ResponseEntity<>(new ResponseJoinRoom(room.getName(), token, session.getSessionId()), HttpStatus.OK);
-                } catch (OpenViduJavaClientException | OpenViduHttpException e) {
-                    logger.warn("Problem calling openvidu server.", e);
-                    throw new OpenViduException("Problem calling openvidu server.");
-                }
-            } else {
-                throw new ResourceNotFoundException("OpenVidu connection not working.");
-            }
-        } else {
-            throw new ResourceNotFoundException("Room does not exists.");
-        }
+        ResponseJoinRoom responseJoinRoom = roomService.joinRoom(roomUUID);
+        return new ResponseEntity<>(responseJoinRoom, HttpStatus.OK);
     }
 
     @PostMapping("/recordings/start/{roomUUID}")
-    public ResponseEntity<String> startRecording(@PathVariable String roomUUID) throws OpenViduJavaClientException, OpenViduHttpException{
+    public ResponseEntity<String> startRecording(@PathVariable String roomUUID) throws OpenViduJavaClientException, OpenViduHttpException, ResourceNotFoundException {
         logger.info("startRecording session {}", roomUUID);
-        boolean exists = roomService.doesRoomExists(roomUUID);
-        if(exists) {
-            Room room = roomService.findById(roomUUID);
-            logger.debug("Found {}", room);
-            String recordingId = this.openViduService.startRecording(room);
-            return new ResponseEntity<>(recordingId, HttpStatus.OK);
-        }
-        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        String recordingId = this.recordingService.startRecording(roomUUID);
+        return new ResponseEntity<>(recordingId, HttpStatus.OK);
     }
 
     @PostMapping("/recordings/stop/{recordingId}")
-    public ResponseEntity<Void> createNewRoom(@PathVariable String recordingId) throws OpenViduJavaClientException, OpenViduHttpException {
-        this.openViduService.stopRecording(recordingId);
-        return new ResponseEntity<>(HttpStatus.OK);
+    public ResponseEntity<Recording> stopRecording(@PathVariable String recordingId) throws OpenViduJavaClientException, OpenViduHttpException, ResourceNotFoundException {
+        Recording recording = this.recordingService.stopRecording(recordingId);
+        return new ResponseEntity<>(recording, HttpStatus.OK);
     }
 
 

@@ -32,14 +32,14 @@ public class OpenViduService {
                 .outputMode(Recording.OutputMode.COMPOSED)
                 .name(dateTime)
                 .build();
-        Recording recording = openVidu.startRecording(room.getId(), properties); // Starts recording
-        logger.info("Start recording: {}", recording);
+        Recording recording = openVidu.startRecording(room.getId(), properties);
+        logger.info("Start recording: {}", recording.getId());
         return recording.getId();
     }
 
     public void stopRecording(String recordingId) throws OpenViduJavaClientException, OpenViduHttpException {
-        Recording recording = openVidu.stopRecording(recordingId); // Stops recording
-        logger.info("Stopped recording: {}", recording);
+        Recording recording = openVidu.stopRecording(recordingId);
+        logger.info("Stopped recording: {}", recording.getId());
     }
 
     public Session createSession(String roomName) {
