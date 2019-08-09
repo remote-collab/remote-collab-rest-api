@@ -20,7 +20,7 @@ Admin backend to create new rooms. Containing security logic.
   your current project root folder. You then have to adjust the `helm install` command in the `deploy-service.sh` file and provide the dedicated path to your
   local helm chart.
 
-## Start Applikation 
+## Start Application 
 Follow instructions in the 
 [UI Repository ](https://github.com/visual-perceptibility/viper-ui-remote-collab-admin/blob/master/README.md "README UI Component") 
 
@@ -112,7 +112,7 @@ If not already done login to your AWS account and create a new `ECR Repository` 
 
 2. Execute the `deploy-service.sh` shell script by typing in
  
-   `deploy-serfice.sh <KEYSTORE_PASSWORD> <AWS_ACCESS_KEY> <AWS_SECRET_KEY>`
+   `deploy-service.sh <KEYSTORE_PASSWORD> <AWS_ACCESS_KEY> <AWS_SECRET_KEY>`
    
    and replace `KEYSTORE_PASSWORD` with the password you provided in the `Create TLS Cert and Key` section above.
    Since this service requires access to AWS DynamoDB we additionally need to pass a valid AWS Access Key and Secret Key.

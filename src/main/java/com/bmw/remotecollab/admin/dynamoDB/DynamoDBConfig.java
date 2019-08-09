@@ -37,12 +37,11 @@ public class DynamoDBConfig {
 
     @Bean
     public AmazonDynamoDB amazonDynamoDB() {
-        logger.info("STarting DynamoDB with endpoint: {}", this.dynamoDBEndpoint);
+        logger.info("Starting DynamoDB with endpoint: {}", this.dynamoDBEndpoint);
         return AmazonDynamoDBClientBuilder
                 .standard()
                 .withEndpointConfiguration(new AwsClientBuilder.EndpointConfiguration(dynamoDBEndpoint, region))
                 .withCredentials(amazonAWSCredentialsProvider())
-                // .withRegion("eu-west-1")
                 .build();
     }
 
@@ -55,13 +54,4 @@ public class DynamoDBConfig {
     public AWSCredentialsProvider amazonAWSCredentialsProvider() {
         return new AWSStaticCredentialsProvider(amazonAWSCredentials());
     }
-
-//    public DynamoDBMapperConfig dynamoDBMapperConfig() {
-//        return DynamoDBMapperConfig.DEFAULT;
-//    }
-//    @Bean
-//    public DynamoDBMapper dynamoDBMapper(AmazonDynamoDB amazonDynamoDB, DynamoDBMapperConfig config) {
-//        return new DynamoDBMapper(amazonDynamoDB, config);
-//    }
-
 }
