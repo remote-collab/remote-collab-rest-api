@@ -9,12 +9,16 @@ import com.amazonaws.services.simpleemail.AmazonSimpleEmailServiceClientBuilder;
 import com.amazonaws.services.simpleemail.model.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 @Service
 public class AwsSenderService {
 
     private static final Logger logger = LoggerFactory.getLogger(AwsSenderService.class);
+
+    @Value("${amazon.aws.region}")
+    private String awsRegion;
 
     private AmazonSimpleEmailService sesClient;
 
@@ -26,7 +30,7 @@ public class AwsSenderService {
 
             sesClient = AmazonSimpleEmailServiceClientBuilder.standard()
                     .withCredentials(awsCreds)
-                    .withRegion(Regions.EU_WEST_1)
+                    .withRegion(awsRegion)
                     .build();
             this.initialized = true;
         } catch (Exception ex) {
