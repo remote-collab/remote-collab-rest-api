@@ -17,14 +17,11 @@ public class AwsSenderService {
 
     private static final Logger logger = LoggerFactory.getLogger(AwsSenderService.class);
 
-    @Value("${amazon.aws.region}")
-    private String awsRegion;
-
     private AmazonSimpleEmailService sesClient;
 
     private boolean initialized = false;
 
-    public AwsSenderService() {
+    public AwsSenderService(@Value("${amazon.aws.region}") String awsRegion) {
         try {
             AWSCredentialsProvider awsCreds = new ClasspathPropertiesFileCredentialsProvider();
 
