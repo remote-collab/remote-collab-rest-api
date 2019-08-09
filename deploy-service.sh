@@ -11,14 +11,10 @@ AWS_SECRET_KEY=$(echo -n $3 |base64)
 
 echo "Deploying service to AWS ECR repository $REPOSITORY_URI"
 
-#helm upgrade --install --wait --set image.repository=$REPOSITORY_URI --set=secret.keystore=$KEYSTORE,secret.password=$KEYSTORE_PASS $SERVICE_NAME helm/
-
-echo "aws access key: $AWS_ACCESS_KEY"
-echo "aws secret key: $AWS_SECRET_KEY"
-
-helm install --wait viper-charts/viper-aws-helm-chart-service \
+helm install --wait viper-charts/viper-aws-helm-service-chart \
     --set=image.repository=$REPOSITORY_URI,image.name=$SERVICE_NAME \
     --set=secret.keystore=$KEYSTORE,secret.password=$KEYSTORE_PASS \
-    --set=secret.aws_accesskey=$AWS_ACCESS_KEY,secret.aws_secretkey=$AWS_SECRET_KEY \
+    --set=project.includeAwsCredentials=true,secret.aws_accesskey=$AWS_ACCESS_KEY,secret.aws_secretkey=$AWS_SECRET_KEY \
     --set=ingress.hosts={$INGRESS_HOST} \
+    --set=project.type=backend \
     --name=$SERVICE_NAME
