@@ -7,7 +7,7 @@ import lombok.ToString;
 
 import java.util.Date;
 
-@DynamoDBTable(tableName = "sessionRoom")
+@DynamoDBTable(tableName = "recording")
 @Getter
 @Setter
 @ToString
