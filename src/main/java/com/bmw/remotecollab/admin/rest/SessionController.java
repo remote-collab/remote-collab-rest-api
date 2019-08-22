@@ -7,6 +7,7 @@ import com.bmw.remotecollab.admin.rest.requests.RequestJoinRoom;
 import com.bmw.remotecollab.admin.rest.requests.RequestNewRoom;
 import com.bmw.remotecollab.admin.rest.response.ResponseJoinRoom;
 import com.bmw.remotecollab.admin.rest.response.ResponseNewRoom;
+import com.bmw.remotecollab.admin.rest.response.ResponseStartRecording;
 import com.bmw.remotecollab.admin.service.OpenViduService;
 import com.bmw.remotecollab.admin.service.RecordingService;
 import com.bmw.remotecollab.admin.service.RoomService;
@@ -43,7 +44,7 @@ public class SessionController {
      *
      * @return UUID to generate the link for all participants.
      */
-    @PutMapping("/room")
+    @PutMapping("/rooms")
     public ResponseEntity<ResponseNewRoom> createNewRoom(@RequestBody RequestNewRoom requestNewRoom){
         String roomName = requestNewRoom.getRoomName();
         String id = roomService.createNewRoom(roomName);
@@ -58,25 +59,35 @@ public class SessionController {
      *
      * @return response contains a token to start an openvidu session.
      */
-    @PostMapping("/room/join")
+    @PostMapping("/rooms/join")
     public ResponseEntity<ResponseJoinRoom> joinRoom(@RequestBody RequestJoinRoom requestJoinRoom) throws ResourceNotFoundException, OpenViduException {
         String roomUUID = requestJoinRoom.getRoomUUID();
+        logger.info("{} is joining room {}", requestJoinRoom.getUserName(), requestJoinRoom.getRoomUUID());
         ResponseJoinRoom responseJoinRoom = roomService.joinRoom(roomUUID);
         return new ResponseEntity<>(responseJoinRoom, HttpStatus.OK);
     }
 
-    @PostMapping("/recordings/start/{roomUUID}")
-    public ResponseEntity<String> startRecording(@PathVariable String roomUUID) throws OpenViduJavaClientException, OpenViduHttpException, ResourceNotFoundException {
-        logger.info("startRecording session {}", roomUUID);
-        String recordingId = this.recordingService.startRecording(roomUUID);
-        return new ResponseEntity<>(recordingId, HttpStatus.OK);
+    @PostMapping("/rooms/{roomUUID}/recordings")
+    public ResponseEntity<ResponseStartRecording> startRecording(@PathVariable String roomUUID, @RequestParam(value = "action") String action) throws OpenViduJavaClientException, OpenViduHttpException, ResourceNotFoundException {
+        logger.info("startRecording session {}. Action: {}", roomUUID, action);
+        ResponseStartRecording response = this.recordingService.startRecording(roomUUID);
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-    @PostMapping("/recordings/stop/{recordingId}")
-    public ResponseEntity<Recording> stopRecording(@PathVariable String recordingId) throws OpenViduJavaClientException, OpenViduHttpException, ResourceNotFoundException {
+    @PostMapping("/rooms/{roomUUID}/recordings/{recordingId}")
+    public ResponseEntity<Recording> stopRecordingWithRoom(@PathVariable String roomUUID, @PathVariable String recordingId, @RequestParam(value = "action") String action) throws OpenViduJavaClientException, OpenViduHttpException, ResourceNotFoundException {
+        logger.info("stopRecording recording {} for room {}. Action: {}", recordingId, roomUUID, action);
+        return internalStopRecording(recordingId);
+    }
+
+    @PostMapping("/recordings/{recordingId}")
+    public ResponseEntity<Recording> stopRecording(@PathVariable String recordingId, @RequestParam(value = "action") String action) throws OpenViduJavaClientException, OpenViduHttpException, ResourceNotFoundException {
+        logger.info("stopRecording recording {}. Action: {}", recordingId, action);
+        return internalStopRecording(recordingId);
+    }
+
+    private ResponseEntity<Recording> internalStopRecording(String recordingId) throws OpenViduJavaClientException, OpenViduHttpException, ResourceNotFoundException {
         Recording recording = this.recordingService.stopRecording(recordingId);
         return new ResponseEntity<>(recording, HttpStatus.OK);
     }
-
-
 }

@@ -7,6 +7,7 @@ import lombok.Setter;
 @Setter
 public class RequestJoinRoom {
 
+    private String userName;
     private String roomUUID;
 
 }

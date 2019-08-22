@@ -1,9 +1,11 @@
 package com.bmw.remotecollab.admin.service;
 
+import com.amazonaws.Response;
 import com.bmw.remotecollab.admin.dynamoDB.RecordingRepository;
 import com.bmw.remotecollab.admin.model.Recording;
 import com.bmw.remotecollab.admin.model.Room;
 import com.bmw.remotecollab.admin.rest.exception.ResourceNotFoundException;
+import com.bmw.remotecollab.admin.rest.response.ResponseStartRecording;
 import io.openvidu.java.client.OpenViduHttpException;
 import io.openvidu.java.client.OpenViduJavaClientException;
 import org.slf4j.Logger;
@@ -25,23 +27,26 @@ public class RecordingService {
     @Autowired
     private RecordingRepository recordingRepository;
 
-    public String startRecording(String roomUUID) throws OpenViduJavaClientException, OpenViduHttpException, ResourceNotFoundException {
-        logger.info("startRecording session {}", roomUUID);
+    public ResponseStartRecording startRecording(String roomUUID) throws OpenViduJavaClientException, OpenViduHttpException, ResourceNotFoundException {
         boolean exists = roomService.doesRoomExists(roomUUID);
         if(exists) {
             Room room = roomService.findById(roomUUID);
             String recordingId = this.openViduService.startRecording(room);
+            logger.info("Started new recording for {}. RecordingID: {}", room.getName(), recordingId);
             Recording recording = new Recording();
             recording.setRecordingId(recordingId);
             room.addRecording(recording);
             recordingRepository.save(recording);
-            return recordingId;
+            return  new ResponseStartRecording(recordingId );
         }
         throw new ResourceNotFoundException("Room does not exists.");
     }
 
-    public Recording stopRecording(String recordingId) throws OpenViduJavaClientException, OpenViduHttpException {
+    public Recording stopRecording(String recordingId) throws OpenViduJavaClientException, OpenViduHttpException, ResourceNotFoundException {
         Recording recording = recordingRepository.findByRecordingId(recordingId);
+        if(recording == null){
+            throw new ResourceNotFoundException("Recording does not exists.");
+        }
 
         this.openViduService.stopRecording(recordingId);
         recording.setStopped(new Date());
