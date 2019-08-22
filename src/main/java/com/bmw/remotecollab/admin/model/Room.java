@@ -16,13 +16,12 @@ import java.util.UUID;
 @Getter
 @Setter
 @ToString
-
 public class Room {
 
     @DynamoDBHashKey
     private String id;
 
-    @DynamoDBAttribute(attributeName = "Name")
+    @DynamoDBAttribute(attributeName = "name")
     private String name;
 
     private List<Member> members = new ArrayList<>();
@@ -34,6 +33,8 @@ public class Room {
         this.name = name;
     }
 
+    // Needed for dynamoDB
+    @SuppressWarnings("unused")
     public Room(){
     }
 
@@ -41,4 +42,7 @@ public class Room {
         this.recordings.add(recording);
     }
 
+    public void addMember(Member member) {
+        this.members.add(member);
+    }
 }
