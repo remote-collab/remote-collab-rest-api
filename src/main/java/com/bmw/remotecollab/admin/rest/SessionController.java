@@ -8,7 +8,6 @@ import com.bmw.remotecollab.admin.rest.requests.RequestNewRoom;
 import com.bmw.remotecollab.admin.rest.response.ResponseJoinRoom;
 import com.bmw.remotecollab.admin.rest.response.ResponseNewRoom;
 import com.bmw.remotecollab.admin.rest.response.ResponseStartRecording;
-import com.bmw.remotecollab.admin.service.OpenViduService;
 import com.bmw.remotecollab.admin.service.RecordingService;
 import com.bmw.remotecollab.admin.service.RoomService;
 import io.openvidu.java.client.OpenViduHttpException;
@@ -20,19 +19,19 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/v1")
 public class SessionController {
 
     private static final Logger logger = LoggerFactory.getLogger(SessionController.class);
 
-    private OpenViduService openViduService;
     private RoomService roomService;
     private RecordingService recordingService;
 
     @Autowired
-    public SessionController(OpenViduService openViduService, RoomService roomService, RecordingService recordingService){
-        this.openViduService = openViduService;
+    public SessionController(RoomService roomService, RecordingService recordingService){
         this.roomService = roomService;
         this.recordingService = recordingService;
     }
@@ -44,10 +43,11 @@ public class SessionController {
      *
      * @return UUID to generate the link for all participants.
      */
-    @PutMapping("/rooms")
+    @PostMapping("/rooms")
     public ResponseEntity<ResponseNewRoom> createNewRoom(@RequestBody RequestNewRoom requestNewRoom){
         String roomName = requestNewRoom.getRoomName();
-        String id = roomService.createNewRoom(roomName);
+        List<String> emails = requestNewRoom.getEmails();
+        String id = roomService.createNewRoom(roomName, emails);
         logger.info("Created new room '{}' with UUID={}", roomName, id);
         return new ResponseEntity<>(new ResponseNewRoom(id), HttpStatus.OK);
     }
