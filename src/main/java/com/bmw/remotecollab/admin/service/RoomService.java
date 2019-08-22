@@ -28,11 +28,13 @@ public class RoomService {
 
     private final RoomRepository roomRepository;
     private final EmailService emailService;
+    private final OpenViduService openViduService;
 
     @Autowired
-    public RoomService(RoomRepository roomRepository, EmailService emailService) {
+    public RoomService(RoomRepository roomRepository, EmailService emailService, OpenViduService openViduService) {
         this.roomRepository = roomRepository;
         this.emailService = emailService;
+        this.openViduService = openViduService;
     }
 
     public String createNewRoom(String roomName, List<String> emails) {
