@@ -73,7 +73,8 @@ public class SessionController {
                 try {
                     logger.debug("Created session with id: {}", session.getSessionId());
                     String token = openViduService.getTokenForSession(session);
-                    return new ResponseEntity<>(new ResponseJoinRoom(room.getName(), token), HttpStatus.OK);
+                    String secondToken = openViduService.getTokenForSession(session);
+                    return new ResponseEntity<>(new ResponseJoinRoom(room.getName(), token, secondToken, session.getSessionId()), HttpStatus.OK);
                 } catch (OpenViduJavaClientException | OpenViduHttpException e) {
                     logger.warn("Problem calling openvidu server.", e);
                     throw new OpenViduException("Problem calling openvidu server.");
