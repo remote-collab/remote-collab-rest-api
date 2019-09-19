@@ -80,4 +80,11 @@ public class RoomService {
     public Room findById(String roomUUID) {
         return roomRepository.findById(roomUUID).get();
     }
+
+    public void sendUserInvitation(String roomUUID, List<String> emails) {
+        Room room = roomRepository.findById(roomUUID).get();
+        emails.forEach(s -> room.addMember(new Member(s)));
+        roomRepository.save(room);
+        emailService.sendInvitationEmail(room.getId(), room.getMembers());
+    }
 }
