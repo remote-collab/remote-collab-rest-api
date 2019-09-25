@@ -69,7 +69,7 @@ public class RoomService {
                 throw new ResourceNotFoundException("OpenVidu connection not working.");
             }
         } else {
-            throw new ResourceNotFoundException("Room does not exists.");
+            throw new ResourceNotFoundException("Room does not exists. RoomUUID: " + roomUUID);
         }
     }
 
