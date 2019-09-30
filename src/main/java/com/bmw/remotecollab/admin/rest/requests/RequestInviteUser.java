@@ -7,7 +7,7 @@ import java.util.List;
 
 @Getter
 @Setter
-public class RequestInvideUser {
+public class RequestInviteUser {
 
     private String roomUUID;
     private List<String> emails;

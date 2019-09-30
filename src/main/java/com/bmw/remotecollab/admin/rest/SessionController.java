@@ -1,18 +1,14 @@
 package com.bmw.remotecollab.admin.rest;
 
-import com.bmw.remotecollab.admin.model.Room;
 import com.bmw.remotecollab.admin.rest.exception.OpenViduException;
 import com.bmw.remotecollab.admin.rest.exception.ResourceNotFoundException;
-import com.bmw.remotecollab.admin.rest.requests.RequestInvideUser;
+import com.bmw.remotecollab.admin.rest.requests.RequestInviteUser;
 import com.bmw.remotecollab.admin.rest.requests.RequestJoinRoom;
 import com.bmw.remotecollab.admin.rest.requests.RequestNewRoom;
 import com.bmw.remotecollab.admin.rest.response.ResponseJoinRoom;
 import com.bmw.remotecollab.admin.rest.response.ResponseNewRoom;
 import com.bmw.remotecollab.admin.service.OpenViduService;
 import com.bmw.remotecollab.admin.service.RoomService;
-import io.openvidu.java.client.OpenViduHttpException;
-import io.openvidu.java.client.OpenViduJavaClientException;
-import io.openvidu.java.client.Session;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,12 +51,12 @@ public class SessionController {
     }
 
     @PostMapping("/rooms/users")
-    public ResponseEntity<String> invideUser(@RequestBody RequestInvideUser requestInvideUser){
-        String roomUUID = requestInvideUser.getRoomUUID();
+    public ResponseEntity<String> inviteUser(@RequestBody RequestInviteUser requestInviteUser){
+        String roomUUID = requestInviteUser.getRoomUUID();
         logger.debug(roomUUID);
         boolean exists = roomService.doesRoomExists(roomUUID);
         if(exists){
-            List<String> emails = requestInvideUser.getEmails();
+            List<String> emails = requestInviteUser.getEmails();
             roomService.sendUserInvitation(roomUUID, emails);
         }
         return new ResponseEntity<>("", HttpStatus.OK);
