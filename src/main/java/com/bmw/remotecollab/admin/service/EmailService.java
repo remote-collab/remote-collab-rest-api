@@ -55,6 +55,7 @@ public class EmailService {
         Context context = new Context();
         String url = this.linkUrl + roomId;
         context.setVariable("url", url);
+        context.setVariable("roomUUID", roomId);
         return templateEngine.process("mailTemplate", context);
     }
 
