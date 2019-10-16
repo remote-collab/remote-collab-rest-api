@@ -8,4 +8,6 @@ import lombok.Getter;
 public class ResponseJoinRoom {
     private String roomName;
     private String token;
+    private String secondToken;
+    private String sessionId;
 }
