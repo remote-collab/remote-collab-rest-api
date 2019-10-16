@@ -1,17 +1,14 @@
 package com.bmw.remotecollab.admin.rest;
 
-import com.bmw.remotecollab.admin.model.Room;
 import com.bmw.remotecollab.admin.rest.exception.OpenViduException;
 import com.bmw.remotecollab.admin.rest.exception.ResourceNotFoundException;
+import com.bmw.remotecollab.admin.rest.requests.RequestInviteUser;
 import com.bmw.remotecollab.admin.rest.requests.RequestJoinRoom;
 import com.bmw.remotecollab.admin.rest.requests.RequestNewRoom;
 import com.bmw.remotecollab.admin.rest.response.ResponseJoinRoom;
 import com.bmw.remotecollab.admin.rest.response.ResponseNewRoom;
 import com.bmw.remotecollab.admin.service.OpenViduService;
 import com.bmw.remotecollab.admin.service.RoomService;
-import io.openvidu.java.client.OpenViduHttpException;
-import io.openvidu.java.client.OpenViduJavaClientException;
-import io.openvidu.java.client.Session;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,13 +40,25 @@ public class SessionController {
      *
      * @return UUID to generate the link for all participants.
      */
-    @PostMapping("/room")
+    @PostMapping("/rooms")
     public ResponseEntity<ResponseNewRoom> createNewRoom(@RequestBody RequestNewRoom requestNewRoom){
         String roomName = requestNewRoom.getRoomName();
         List<String> emails = requestNewRoom.getEmails();
         String id = roomService.createNewRoom(roomName, emails);
         logger.info("Created new room '{}' with UUID={}", roomName, id);
         return new ResponseEntity<>(new ResponseNewRoom(id), HttpStatus.OK);
+    }
+
+    @PostMapping("/rooms/users")
+    public ResponseEntity<String> inviteUser(@RequestBody RequestInviteUser requestInviteUser){
+        String roomUUID = requestInviteUser.getRoomUUID();
+        logger.debug(roomUUID);
+        boolean exists = roomService.doesRoomExists(roomUUID);
+        if(exists){
+            List<String> emails = requestInviteUser.getEmails();
+            roomService.sendUserInvitation(roomUUID, emails);
+        }
+        return new ResponseEntity<>("", HttpStatus.OK);
     }
 
     /**
@@ -59,30 +68,12 @@ public class SessionController {
      *
      * @return response contains a token to start an openvidu session.
      */
-    @PostMapping("/room/join")
+    @PostMapping("/rooms/join")
     public ResponseEntity<ResponseJoinRoom> joinRoom(@RequestBody RequestJoinRoom requestJoinRoom) throws ResourceNotFoundException, OpenViduException {
         String roomUUID = requestJoinRoom.getRoomUUID();
         logger.debug(roomUUID);
-        boolean exists = roomService.doesRoomExists(roomUUID);
-        if(exists){
-            Room room = roomService.findById(roomUUID);
-            logger.debug("Found {}", room);
-            Session session = openViduService.createSession(room.getName());
-            if(session != null) {
-                try {
-                    logger.debug("Created session with id: {}", session.getSessionId());
-                    String token = openViduService.getTokenForSession(session);
-                    return new ResponseEntity<>(new ResponseJoinRoom(room.getName(), token), HttpStatus.OK);
-                } catch (OpenViduJavaClientException | OpenViduHttpException e) {
-                    logger.warn("Problem calling openvidu server.", e);
-                    throw new OpenViduException("Problem calling openvidu server.");
-                }
-            } else {
-                throw new ResourceNotFoundException("OpenVidu connection not working.");
-            }
-        } else {
-            throw new ResourceNotFoundException("Room does not exists.");
-        }
+        ResponseJoinRoom responseJoinRoom = roomService.joinRoom(roomUUID);
+        return new ResponseEntity<>(responseJoinRoom, HttpStatus.OK);
     }
 
     @GetMapping("/status")

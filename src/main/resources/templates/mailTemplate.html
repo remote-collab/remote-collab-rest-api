@@ -5,6 +5,8 @@
     <div class="body">
         <span>You have been invited to join a video session.</span>
         <a th:href = "${ url }" > Join Room </a>
+        <br/>
+        <p>To join the session, please use the roomId: <span th:text="${ roomUUID }"></span></p>
     </div>
 </body>
 </html>
