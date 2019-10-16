@@ -22,7 +22,7 @@ Admin backend to create new rooms. Containing security logic.
 
 ## Start Application 
 Follow instructions in the 
-[UI Repository ](https://github.com/visual-perceptibility/viper-ui-remote-collab-admin/blob/master/README.md "README UI Component") 
+[UI Repository ](https://github.com/visual-perceptibility/viper-ui-standalone/blob/master/README.md "README UI Component") 
 
 ## AWS Deployment
 
@@ -34,24 +34,9 @@ Before using the chart the application needs to be built with docker and pushed 
 Execute `export AWS_PROFILE=<PROFILE_NAME>` on the shell. Replace `PROFILE_NAME` with a valid aws profile definition
 from `~/.aws/config`
 
-### Create TLS Cert and Key
-
-1. CD into `src/main/resources`
-
-2. Create certificate and key with OpenSSL
-    ```
-    openssl req -x509 -newkey rsa:4096 -sha256 -nodes -keyout viper-service-remote-collab-admin.key -out viper-service-remote-collab-admin.crt -subj "/CN=localhost" -days 365
-    ```
-    Note that you will be asked for a keystore password. Remember this password for later. It will be needed for the helm deployment.
-
-3. Create keystore file from cert and keyfile generated in step 1
-    ```
-    openssl pkcs12 -export -in viper-service-remote-collab-admin.crt -inkey viper-service-remote-collab-admin.key -out keystore.p12 -name viper-service-remote-collab-admin
-    ```
-
 ### Create ECR Repository in AWS
 
-If not already done login to your AWS account and create a new `ECR Repository` named `viper/viper-service-remote-collab-admin`
+If not already done login to your AWS account and create a new `ECR Repository` named `viper/viper-service-admin`
 
 ### Build the service and push it to AWS ECR
 
@@ -75,13 +60,13 @@ If not already done login to your AWS account and create a new `ECR Repository` 
 3. Create a new docker image on your local machine
 
    ```bash
-   docker build -t viper/viper-service-remote-collab-admin .   
+   docker build -t viper/viper-service-admin .   
    ```
    
 4. Tag the newly created docker image in order to push it to the registry
 
    ```bash
-   docker tag viper/viper-service-remote-collab-admin:latest <AWS_ACCOUNT_ID>.dkr.ecr.<AWS_REGION>.amazonaws.com/viper/viper-service-remote-collab-admin:latest
+   docker tag viper/viper-service-admin:latest <AWS_ACCOUNT_ID>.dkr.ecr.<AWS_REGION>.amazonaws.com/viper/viper-service-admin:latest
    ```
    
    where
@@ -91,19 +76,19 @@ If not already done login to your AWS account and create a new `ECR Repository` 
    Example call:
    
    ```bash
-   docker tag viper/viper-service-remote-collab-admin:latest 111122223333.dkr.ecr.eu-west-1.amazonaws.com/viper/viper-service-remote-collab-admin:latest
+   docker tag viper/viper-service-admin:latest 111122223333.dkr.ecr.eu-west-1.amazonaws.com/viper/viper-service-admin:latest
    ```
    
 5. Push the image to ECR
 
     ```bash
-    docker push <AWS_ACCOUNT_ID>.dkr.ecr.<AWS_REGION>.amazonaws.com/viper/viper-service-remote-collab-admin:latest
+    docker push <AWS_ACCOUNT_ID>.dkr.ecr.<AWS_REGION>.amazonaws.com/viper/viper-service-admin:latest
     ```
     
     Example call:
     
     ```bash
-    docker push 111122223333.dkr.ecr.eu-west-1.amazonaws.com/viper/viper-service-remote-collab-admin:latest
+    docker push 111122223333.dkr.ecr.eu-west-1.amazonaws.com/viper/viper-service-admin:latest
     ```
 
 ### Deploy the service with pre-built helm chart
@@ -112,9 +97,8 @@ If not already done login to your AWS account and create a new `ECR Repository` 
 
 2. Execute the `deploy-service.sh` shell script by typing in
  
-   `deploy-service.sh <KEYSTORE_PASSWORD> <AWS_ACCESS_KEY> <AWS_SECRET_KEY>`
+   `deploy-service.sh <AWS_ACCESS_KEY> <AWS_SECRET_KEY>`
    
-   and replace `KEYSTORE_PASSWORD` with the password you provided in the `Create TLS Cert and Key` section above.
    Since this service requires access to AWS DynamoDB we additionally need to pass a valid AWS Access Key and Secret Key.
    
 

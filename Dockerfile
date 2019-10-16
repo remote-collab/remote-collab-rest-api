@@ -1,6 +1,6 @@
 FROM openjdk:8-jre-alpine
 
-ENV SERVICE_NAME viper-service-remote-collab-admin
+ENV SERVICE_NAME viper-service-admin
 
 ADD target/${SERVICE_NAME}*.jar app.jar
 

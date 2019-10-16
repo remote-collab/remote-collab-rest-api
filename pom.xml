@@ -4,11 +4,11 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.bmw.remotecollab.admin</groupId>
-    <artifactId>viper-service-remote-collab-admin</artifactId>
+    <artifactId>viper-service-admin</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <packaging>jar</packaging>
 
-    <name>viper-service-remote-collab-admin</name>
+    <name>viper-service-admin</name>
 
     <parent>
         <groupId>org.springframework.boot</groupId>
