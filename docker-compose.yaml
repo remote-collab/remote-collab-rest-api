@@ -21,8 +21,8 @@ services:
       # Note: even though these keys are garbage values, access key and
       # secret key are still required. Otherwise, `aws-sdk` will attempt
       # to read credentials from Amazon's service and fail.
-      amazon.aws.accesskey: AKIAR2T7SJUE2A2J5XQM
-      amazon.aws.secretkey: 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
+      amazon.aws.accesskey: ${AWS_ACCESS_KEY}
+      amazon.aws.secretkey: ${AWS_SECRET_KEY}
       openvidu.secret: MY_SECRET
       openvidu.url: https://openvidu-server:4443/
     depends_on:
