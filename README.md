@@ -44,7 +44,7 @@ If not already done login to your AWS account and create a new `ECR Repository` 
 
 2. Run the following command to login to the ECR registry 
    ```bash
-   eval $(aws ecr --profile <AWS_PROFILE_NAME> get-login --no-include-email --region <AWS_REGION>")
+   eval $(aws ecr --profile <AWS_PROFILE_NAME> get-login --no-include-email --region <AWS_REGION>)
    ```
    where
    
@@ -54,7 +54,7 @@ If not already done login to your AWS account and create a new `ECR Repository` 
    Example call:
    
    ```bash
-    eval $(aws ecr --profile my-aws-profile get-login --no-include-email --region eu-west-1")
+    eval $(aws ecr --profile my-aws-profile get-login --no-include-email --region eu-west-1)
    ```
    
 3. Create a new docker image on your local machine
@@ -90,6 +90,26 @@ If not already done login to your AWS account and create a new `ECR Repository` 
     ```bash
     docker push 111122223333.dkr.ecr.eu-west-1.amazonaws.com/viper/viper-service-admin:latest
     ```
+
+### Create kubernetes secret for AWS ECR access
+
+In order to access the previously generated ECR repository during deployment time a secret containing the
+docker registry's login token needs to be created.
+
+1. Retrieve the docker login token through the AWS command line.
+   ```
+   aws ecr --region=<AWS_REGION> get-authorization-token --output text --query "authorizationData[].authorizationToken" | base64 --decode | cut -d: -f2
+   ```
+   Replace `AWS_REGION` with the region your repository is located at, e.g. `eu-west-1`
+   
+2. Create a kubernetes secret with name `aws-ecr-secret` and put in the login token from step 1.
+   ```
+   kubectl create secret docker-registry aws-ecr-secret \
+   --docker-server=125895331081.dkr.ecr.eu-west-1.amazonaws.com \
+   --docker-username=AWS \
+   --docker-password=<PASSWORD_FROM_STEP_1> \
+   --docker-email=<ARBITRARY_EMAIL_ADDRESS>
+   ```
 
 ### Deploy the service with pre-built helm chart
 
