@@ -33,9 +33,9 @@ services:
     container_name: dynamodb-session
     hostname: dynamodb-session
 
-#  viper-ui-standalone:
-#    build: viper-ui-standalone
-#    hostname: viper-ui-standalone
-#    container_name: viper-ui-standalone
-#    ports:
-#      - 8080:8080
+  viper-ui-standalone:
+    image: viper-ui-standalone
+    hostname: viper-ui-standalone
+    container_name: viper-ui-standalone
+    ports:
+      - 8443:8080
