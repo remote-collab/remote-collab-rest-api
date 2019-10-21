@@ -12,6 +12,15 @@ AWS_SECRET_KEY=$(echo -n $2 |base64)
 AWS_PROFILE=$3
 AWS_REGION=eu-west-1
 
+OUT=$(helm ls $SERVICE_NAME)
+
+if [ -z "$OUT" ] ; then
+  echo "Project is not yet deployed, will continue with setup..."
+else
+  echo "will delete old project files before redeployment"
+  helm delete --purge $SERVICE_NAME
+fi
+
 AWS_ACCOUNT=$(aws ecr get-authorization-token --output text --query "authorizationData[].proxyEndpoint")
 
 mvn clean package -Damazon.aws.accesskey=$1 -Damazon.aws.secretkey=$2
@@ -43,7 +52,6 @@ kubectl create secret --namespace $NAMESPACE docker-registry $SECRET_NAME \
 echo "Deploying service to AWS ECR repository $REPOSITORY_URI"
 
 helm install --wait viper-charts/viper-aws-helm-service-chart \
-    --set=project.type=backend \
     --set=namespace.name=$NAMESPACE \
     --set=image.repository=$REPOSITORY_URI \
     --set=project.includeAwsCredentials=true \
