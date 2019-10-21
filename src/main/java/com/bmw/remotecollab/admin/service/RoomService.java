@@ -15,6 +15,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Local implementation. No db storage up until now.
@@ -36,6 +38,7 @@ public class RoomService {
     }
 
     public String createNewRoom(String roomName, List<String> emails) {
+
         Room room = new Room(roomName);
         emails.forEach(s -> room.addMember(new Member(s)));
 
@@ -49,11 +52,11 @@ public class RoomService {
     public ResponseJoinRoom joinRoom(String roomUUID) throws OpenViduException, ResourceNotFoundException {
         logger.debug(roomUUID);
         boolean exists = doesRoomExists(roomUUID);
-        if(exists){
+        if (exists) {
             Room room = findById(roomUUID);
             logger.debug("Found {}", room);
             Session session = openViduService.createSession(room.getId());
-            if(session != null) {
+            if (session != null) {
                 try {
                     logger.debug("Created session with id: {}", session.getSessionId());
                     String token = openViduService.getTokenForSession(session);
@@ -81,9 +84,10 @@ public class RoomService {
     }
 
     public void sendUserInvitation(String roomUUID, List<String> emails) {
+        Set<Member> newMembers = emails.stream().map(Member::new).collect(Collectors.toSet());
         Room room = roomRepository.findById(roomUUID).get();
-        emails.forEach(s -> room.addMember(new Member(s)));
+        emailService.sendInvitationEmail(room.getId(), newMembers);
+        room.addMembers(newMembers);
         roomRepository.save(room);
-        emailService.sendInvitationEmail(room.getId(), room.getMembers());
     }
 }

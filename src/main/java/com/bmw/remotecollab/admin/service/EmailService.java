@@ -12,7 +12,7 @@ import org.springframework.stereotype.Service;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 
-import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -35,7 +35,7 @@ public class EmailService {
         this.templateEngine = templateEngine;
     }
 
-    void sendInvitationEmail(String roomId, List<Member> members){
+    void sendInvitationEmail(String roomId, Set<Member> members) {
         logger.info("Sending invitation emails for Room: {} - Members: {}", roomId, members);
 
         String subject = "Attend online meeting";

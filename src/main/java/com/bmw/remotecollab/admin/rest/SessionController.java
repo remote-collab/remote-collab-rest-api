@@ -16,9 +16,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.util.List;
 
 @RestController
+@Valid
 @RequestMapping("/api/v1")
 public class SessionController {
 
@@ -28,7 +30,7 @@ public class SessionController {
     private RoomService roomService;
 
     @Autowired
-    public SessionController(OpenViduService openViduService, RoomService roomService){
+    public SessionController(OpenViduService openViduService, RoomService roomService) {
         this.openViduService = openViduService;
         this.roomService = roomService;
     }
@@ -37,11 +39,10 @@ public class SessionController {
      * Create a new room to start a shared video session.
      *
      * @param requestNewRoom request contains the name that will be displayed during the session.
-     *
      * @return UUID to generate the link for all participants.
      */
     @PostMapping("/rooms")
-    public ResponseEntity<ResponseNewRoom> createNewRoom(@RequestBody RequestNewRoom requestNewRoom){
+    public ResponseEntity<ResponseNewRoom> createNewRoom(@RequestBody @Valid RequestNewRoom requestNewRoom) {
         String roomName = requestNewRoom.getRoomName();
         List<String> emails = requestNewRoom.getEmails();
         String id = roomService.createNewRoom(roomName, emails);
@@ -50,11 +51,11 @@ public class SessionController {
     }
 
     @PostMapping("/rooms/users")
-    public ResponseEntity<String> inviteUser(@RequestBody RequestInviteUser requestInviteUser){
+    public ResponseEntity<String> inviteUser(@RequestBody @Valid RequestInviteUser requestInviteUser) {
         String roomUUID = requestInviteUser.getRoomUUID();
         logger.debug(roomUUID);
         boolean exists = roomService.doesRoomExists(roomUUID);
-        if(exists){
+        if (exists) {
             List<String> emails = requestInviteUser.getEmails();
             roomService.sendUserInvitation(roomUUID, emails);
         }
@@ -64,8 +65,7 @@ public class SessionController {
     /**
      * Join an existing room. Returns an error in case the room does not exists.
      *
-     * @param requestJoinRoom  request contains the uuid of the room.
-     *
+     * @param requestJoinRoom request contains the uuid of the room.
      * @return response contains a token to start an openvidu session.
      */
     @PostMapping("/rooms/join")
@@ -78,7 +78,7 @@ public class SessionController {
 
     //TODO: replace with prometheus / actuator
     @GetMapping("/status")
-    public String getStatus(){
+    public String getStatus() {
         return "up";
     }
 

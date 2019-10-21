@@ -7,8 +7,9 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 
 
@@ -24,19 +25,23 @@ public class Room {
     @DynamoDBAttribute(attributeName = "name")
     private String name;
 
-    private List<Member> members = new ArrayList<>();
+    private Set<Member> members = new HashSet<>();
 
-    public Room(String name){
+    public Room(String name) {
         this.id = UUID.randomUUID().toString();
         this.name = name;
     }
 
     // Needed for dynamoDB
     @SuppressWarnings("unused")
-    public Room(){
+    public Room() {
     }
 
     public void addMember(Member member) {
         this.members.add(member);
+    }
+
+    public void addMembers(Collection<Member> members) {
+        this.members.addAll(members);
     }
 }
