@@ -116,10 +116,10 @@ docker registry's login token needs to be created.
 
 2. Execute the `deploy-service.sh` shell script by typing in
  
-   `deploy-service.sh <AWS_ACCESS_KEY> <AWS_SECRET_KEY> <AWS_ACCOUNTID>`
+   `deploy-service.sh <AWS_ACCESS_KEY> <AWS_SECRET_KEY> <AWS_ACCOUNTID> <AWS_PROFILE>`
    
    Since this service requires access to AWS DynamoDB we additionally need to pass a valid AWS Access Key and Secret Key.
-   Also, we need to pass in the AWS Account ID in order to access the corresponding AWS ECR repo.   
+   Also, we need to pass in the AWS Account ID in order to access the corresponding AWS ECR repo as well as a valid AWS profile name.
 
 ## How does it work?
 

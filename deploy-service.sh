@@ -11,6 +11,18 @@ AWS_ACCESS_KEY=$(echo -n $1 |base64)
 AWS_SECRET_KEY=$(echo -n $2 |base64)
 AWS_ACCOUNT=$3
 AWS_REGION=eu-west-1
+AWS_PROFILE=$4
+
+mvn clean package -Damazon.aws.accesskey=$1 -Damazon.aws.secretkey=$2
+
+eval $(aws ecr --profile $AWS_PROFILE get-login --no-include-email --region $AWS_REGION)
+
+docker build -t viper/$SERVICE_NAME .
+
+docker tag viper/$SERVICE_NAME:latest $REPOSITORY_URI/$SERVICE_NAME:latest
+
+docker push $REPOSITORY_URI/$SERVICE_NAME:latest
+
 
 TOKEN=$(aws ecr --region=$AWS_REGION get-authorization-token --output text --query "authorizationData[].authorizationToken" | base64 --decode | cut -d: -f2)
 
