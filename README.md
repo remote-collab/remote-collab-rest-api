@@ -105,22 +105,21 @@ docker registry's login token needs to be created.
 2. Create a kubernetes secret with name `aws-ecr-secret` and put in the login token from step 1.
    ```
    kubectl create secret docker-registry aws-ecr-secret \
-   --docker-server=125895331081.dkr.ecr.eu-west-1.amazonaws.com \
+   --docker-server=111122223333.dkr.ecr.eu-west-1.amazonaws.com \
    --docker-username=AWS \
    --docker-password=<PASSWORD_FROM_STEP_1> \
    --docker-email=<ARBITRARY_EMAIL_ADDRESS>
    ```
-
 ### Deploy the service with pre-built helm chart
 
 1. CD into the project's root folder
 
 2. Execute the `deploy-service.sh` shell script by typing in
  
-   `deploy-service.sh <AWS_ACCESS_KEY> <AWS_SECRET_KEY>`
+   `deploy-service.sh <AWS_ACCESS_KEY> <AWS_SECRET_KEY> <AWS_PROFILE>`
    
    Since this service requires access to AWS DynamoDB we additionally need to pass a valid AWS Access Key and Secret Key.
-   
+   Also, we need to pass in a valid AWS Profile.
 
 ## How does it work?
 
@@ -134,3 +133,24 @@ In `deploy-service.sh` change the following environment variables according to y
 - `SERVICE_NAME` = the name of the service how it should end up in K8S
 - `INGRESS_HOST` = the DNS name of the endpoint this service should be deployed to. You can choose any DNS compliant
                    name which will result in <INGRESS_HOST>.service.viper.bmw.cloud
+                   
+                   
+## Troubleshooting
+
+When your service won't be deployed due to missing AWS ECR credentials you need to refresh the `aws-ecr-secret`.
+Just call the `refresh_secret.sh` script to automatically get the secret deleted and deployed with a fresh token:
+
+```
+./refresh_secret.sh <ACCOUNT_ID> <K8S_NAMESPACE>
+```
+
+where
+
+- `ACCOUNT_ID` = the ID of your aws account, e.g 123456789123
+- `K8S_NAMESPACE` = the namespace the secret needs to be deployed to. The namespace must be the same as the one your services are deployed to
+
+Example Call:
+
+```
+./refresh_secret.sh 123456789123 remote-collab
+```
