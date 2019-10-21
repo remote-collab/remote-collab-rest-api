@@ -19,6 +19,7 @@ import java.util.stream.Collectors;
 public class EmailService {
 
     private static final Logger logger = LoggerFactory.getLogger(EmailService.class);
+    private static final String INVITE_TEMPLATE = "InviteEmailTemplate";
 
     private final String fromEmail;
     private final String fromEmailName;
@@ -39,7 +40,7 @@ public class EmailService {
         logger.info("Sending invitation emails for Room: {} - Members: {}", roomId, members);
 
         String subject = "Attend online meeting";
-        String body = buildBody(roomId);
+        String body = buildBody(INVITE_TEMPLATE, roomId);
 
         Email.EmailBuilder emailBuilder = Email.builder();
         emailBuilder.from(new From(this.fromEmail, this.fromEmailName));
@@ -51,12 +52,12 @@ public class EmailService {
         awsSenderService.sendEmail(emailBuilder.build());
     }
 
-    private String buildBody(String roomId) {
+    private String buildBody(String roomId, String mailTemplate) {
         Context context = new Context();
         String url = this.linkUrl + roomId;
         context.setVariable("url", url);
         context.setVariable("roomUUID", roomId);
-        return templateEngine.process("mailTemplate", context);
+        return templateEngine.process(mailTemplate, context);
     }
 
 }
