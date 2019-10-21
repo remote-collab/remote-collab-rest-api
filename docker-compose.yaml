@@ -38,4 +38,4 @@ services:
     hostname: viper-ui-standalone
     container_name: viper-ui-standalone
     ports:
-      - 8443:8080
+      - 8081:8080
