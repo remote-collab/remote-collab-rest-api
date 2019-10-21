@@ -2,8 +2,7 @@ package com.bmw.remotecollab.admin.service.email;
 
 import com.amazonaws.SdkClientException;
 import com.amazonaws.auth.AWSCredentialsProvider;
-import com.amazonaws.auth.ClasspathPropertiesFileCredentialsProvider;
-import com.amazonaws.regions.Regions;
+import com.amazonaws.auth.EnvironmentVariableCredentialsProvider;
 import com.amazonaws.services.simpleemail.AmazonSimpleEmailService;
 import com.amazonaws.services.simpleemail.AmazonSimpleEmailServiceClientBuilder;
 import com.amazonaws.services.simpleemail.model.*;
@@ -23,7 +22,7 @@ public class AwsSenderService {
 
     public AwsSenderService(@Value("${amazon.aws.region}") String awsRegion) {
         try {
-            AWSCredentialsProvider awsCreds = new ClasspathPropertiesFileCredentialsProvider();
+            AWSCredentialsProvider awsCreds = new EnvironmentVariableCredentialsProvider();
 
             sesClient = AmazonSimpleEmailServiceClientBuilder.standard()
                     .withCredentials(awsCreds)

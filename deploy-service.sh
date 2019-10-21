@@ -7,8 +7,8 @@ SECRET_NAME=aws-ecr-secret
 EMAIL=app-factory.support@list.bmw.com
 
 REPOSITORY_URI=$(aws ecr describe-repositories --query "repositories[?contains(repositoryName, '$SERVICE_NAME')].repositoryUri" --output text | awk -F / '{print $1 "/" $2}')
-AWS_ACCESS_KEY=$(echo -n $1 |base64)
-AWS_SECRET_KEY=$(echo -n $2 |base64)
+AWS_ACCESS_KEY=$(echo -n $1 | base64)
+AWS_SECRET_KEY=$(echo -n $2 | base64)
 AWS_PROFILE=$3
 AWS_REGION=eu-west-1
 
@@ -23,7 +23,7 @@ fi
 
 AWS_ACCOUNT=$(aws ecr get-authorization-token --output text --query "authorizationData[].proxyEndpoint")
 
-mvn clean package -Damazon.aws.accesskey=$1 -Damazon.aws.secretkey=$2
+mvn clean package -DAWS_ACCESS_KEY=$1 -DAWS_SECRET_KEY=$2
 
 eval $(aws ecr --profile $AWS_PROFILE get-login --no-include-email --region $AWS_REGION)
 
