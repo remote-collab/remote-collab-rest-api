@@ -9,9 +9,10 @@ EMAIL=app-factory.support@list.bmw.com
 REPOSITORY_URI=$(aws ecr describe-repositories --query "repositories[?contains(repositoryName, '$SERVICE_NAME')].repositoryUri" --output text | awk -F / '{print $1 "/" $2}')
 AWS_ACCESS_KEY=$(echo -n $1 |base64)
 AWS_SECRET_KEY=$(echo -n $2 |base64)
-AWS_ACCOUNT=$3
+AWS_PROFILE=$3
 AWS_REGION=eu-west-1
-AWS_PROFILE=$4
+
+AWS_ACCOUNT=$(aws ecr get-authorization-token --output text --query "authorizationData[].proxyEndpoint")
 
 mvn clean package -Damazon.aws.accesskey=$1 -Damazon.aws.secretkey=$2
 
@@ -33,7 +34,7 @@ kubectl create namespace $NAMESPACE
 kubectl delete secret --namespace $NAMESPACE --ignore-not-found $SECRET_NAME
 
 kubectl create secret --namespace $NAMESPACE docker-registry $SECRET_NAME \
-  --docker-server=$AWS_ACCOUNT.dkr.ecr.$AWS_REGION.amazonaws.com \
+  --docker-server=$AWS_ACCOUNT \
   --docker-username=AWS \
   --docker-password="${TOKEN}" \
   --docker-email="${EMAIL}"
