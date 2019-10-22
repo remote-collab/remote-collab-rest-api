@@ -1,6 +1,5 @@
 package com.bmw.remotecollab.admin.rest.errorhandling;
 
-import com.bmw.remotecollab.admin.rest.SessionController;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -15,7 +14,7 @@ import javax.validation.ConstraintViolationException;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@ControllerAdvice(basePackageClasses = SessionController.class)
+@ControllerAdvice
 public class ApiExceptionHandler {
 
     @ExceptionHandler

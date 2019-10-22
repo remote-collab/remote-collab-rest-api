@@ -6,6 +6,11 @@ import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
 import java.util.List;
 
+/**
+ * Validator to check if a List of emails contains only valid emails. Checked by apache commons' {@link EmailValidator}.
+ * </br>
+ * Associated Annotation: {@link EmailList}
+ */
 public class EmailListValidator implements ConstraintValidator<EmailList, List<String>> {
 
     private EmailValidator ev;
