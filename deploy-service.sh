@@ -23,7 +23,7 @@ fi
 
 AWS_ACCOUNT=$(aws ecr get-authorization-token --output text --query "authorizationData[].proxyEndpoint")
 
-mvn clean package -DAWS_ACCESS_KEY=$1 -DAWS_SECRET_KEY=$2
+mvn clean package
 
 eval $(aws ecr --profile $AWS_PROFILE get-login --no-include-email --region $AWS_REGION)
 
