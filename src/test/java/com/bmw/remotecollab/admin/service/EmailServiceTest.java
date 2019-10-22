@@ -18,9 +18,8 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.thymeleaf.TemplateEngine;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import java.util.HashSet;
+import java.util.Set;
 
 
 @RunWith(SpringRunner.class)
@@ -45,7 +44,7 @@ public class EmailServiceTest {
     @Test
     @Ignore
     public void testSendInvitationEmail() {
-        List<Member> members = new ArrayList<>();
+        Set<Member> members = new HashSet<>();
         members.add(new Member(testEmail));
         emailService.sendInvitationEmail("123123", members);
         Mockito.verify(awsSenderService, Mockito.times(1)).sendEmail(email.capture());
