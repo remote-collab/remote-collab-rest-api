@@ -42,8 +42,9 @@ public class SessionControllerTest {
     private RoomRepository rooms;
 
     @Test
-    public void contexLoads() throws Exception {
+    public void contexLoads() {
         assertThat(controller).isNotNull();
+        assertThat(mockMvc).isNotNull();
     }
 
 

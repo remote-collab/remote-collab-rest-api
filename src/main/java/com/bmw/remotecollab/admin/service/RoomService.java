@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -40,7 +41,10 @@ public class RoomService {
     public String createNewRoom(String roomName, List<String> emails) {
 
         Room room = new Room(roomName);
-        emails.forEach(s -> room.addMember(new Member(s)));
+
+        if(emails != null) {
+            emails.forEach(s -> room.addMember(new Member(s)));
+        }
 
         roomRepository.save(room);
         String roomId = room.getId();
@@ -51,18 +55,19 @@ public class RoomService {
 
     public ResponseJoinRoom joinRoom(String roomUUID) throws OpenViduException, ResourceNotFoundException {
         logger.debug(roomUUID);
-        boolean exists = doesRoomExists(roomUUID);
-        if (exists) {
-            Room room = findById(roomUUID);
+
+        final Optional<Room> roomOpt = roomRepository.findById(roomUUID);
+        if (roomOpt.isPresent()) {
+            Room room = roomOpt.get();
             logger.debug("Found {}", room);
             Session session = openViduService.createSession(room.getId());
             if (session != null) {
                 try {
                     logger.debug("Created session with id: {}", session.getSessionId());
-                    String token = openViduService.getTokenForSession(session);
+                    String audioVideoToken = openViduService.getTokenForSession(session);
 
-                    String secondToken = openViduService.getTokenForSession(session);
-                    return new ResponseJoinRoom(room.getName(), token, secondToken, session.getSessionId());
+                    String screenShareToken = openViduService.getTokenForSession(session);
+                    return new ResponseJoinRoom(room.getName(), audioVideoToken, screenShareToken, session.getSessionId());
                 } catch (OpenViduJavaClientException | OpenViduHttpException e) {
                     logger.warn("Problem calling openvidu server.", e);
                     throw new OpenViduException("Problem calling openvidu server.");
@@ -79,15 +84,18 @@ public class RoomService {
         return roomRepository.existsById(id);
     }
 
-    public Room findById(String roomUUID) {
-        return roomRepository.findById(roomUUID).get();
-    }
-
     public void sendUserInvitation(String roomUUID, List<String> emails) {
         Set<Member> newMembers = emails.stream().map(Member::new).collect(Collectors.toSet());
-        Room room = roomRepository.findById(roomUUID).get();
-        emailService.sendInvitationEmail(room.getId(), newMembers);
-        room.addMembers(newMembers);
-        roomRepository.save(room);
+
+        roomRepository.findById(roomUUID)
+                .ifPresent(r -> {
+                    sendUserInvitation(r, newMembers);
+                    r.addMembers(newMembers);
+                    roomRepository.save(r);
+                });
+    }
+
+    private void sendUserInvitation(Room room, Set<Member> targets) {
+        emailService.sendInvitationEmail(room.getId(), targets);
     }
 }

@@ -40,7 +40,7 @@ public class EmailService {
         logger.info("Sending invitation emails for Room: {} - Members: {}", roomId, members);
 
         String subject = "Attend online meeting";
-        String body = buildBody(INVITE_TEMPLATE, roomId);
+        String body = buildBody(roomId, INVITE_TEMPLATE);
 
         Email.EmailBuilder emailBuilder = Email.builder();
         emailBuilder.from(new From(this.fromEmail, this.fromEmailName));
