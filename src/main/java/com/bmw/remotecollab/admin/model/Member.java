@@ -7,7 +7,8 @@ import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBTable;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
-import org.springframework.lang.NonNull;
+
+import javax.validation.constraints.Email;
 
 @Getter
 @Setter
@@ -20,14 +21,15 @@ public class Member {
     private String id;
 
     @DynamoDBAttribute(attributeName = "emailAddress")
+    @Email
     private String email;
 
-    public Member(@NonNull String email){
+    public Member(String email) {
         this.email = email;
     }
 
     @SuppressWarnings("unused")
-    public Member(){
+    public Member() {
     }
 
     @Override

@@ -13,7 +13,7 @@ import java.lang.annotation.Target;
  * Note flag {@link #emptyListIsValid()}:
  * Set to {@code false}, if {@code null} and an empty list is considered invalid. Default {@code true}.
  */
-@Target({ElementType.METHOD, ElementType.FIELD})
+@Target({ElementType.METHOD, ElementType.FIELD, ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
 @Constraint(validatedBy = EmailListValidator.class)
 public @interface EmailList {

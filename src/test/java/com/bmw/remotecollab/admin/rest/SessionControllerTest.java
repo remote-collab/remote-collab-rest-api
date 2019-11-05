@@ -1,11 +1,18 @@
 package com.bmw.remotecollab.admin.rest;
 
 import com.bmw.remotecollab.admin.dynamoDB.RoomRepository;
+import com.bmw.remotecollab.admin.rest.exception.OpenViduException;
+import com.bmw.remotecollab.admin.rest.exception.ResourceNotFoundException;
 import com.bmw.remotecollab.admin.rest.requests.RequestInviteUser;
+import com.bmw.remotecollab.admin.rest.requests.RequestJoinRoom;
 import com.bmw.remotecollab.admin.rest.requests.RequestNewRoom;
+import com.bmw.remotecollab.admin.rest.response.ResponseJoinRoom;
+import com.bmw.remotecollab.admin.service.RoomService;
 import com.google.gson.Gson;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -13,23 +20,23 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.test.web.servlet.ResultMatcher;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import java.util.ArrayList;
 
+import static com.bmw.remotecollab.admin.TestHelper.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsString;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
 @AutoConfigureMockMvc
 public class SessionControllerTest {
-
-
-    private static final String URL_PREFIX = "/api/v1/";
     private static final Gson gson = new Gson();
 
     @Autowired
@@ -39,7 +46,22 @@ public class SessionControllerTest {
     private MockMvc mockMvc;
 
     @MockBean
-    private RoomRepository rooms;
+    private RoomRepository roomRepository;
+    @MockBean
+    private RoomService roomService;
+
+
+    @Before
+    public void beforeTest() throws ResourceNotFoundException, OpenViduException {
+        Mockito.when(roomService.doesRoomExist(VALID_ROOM_UUID)).thenReturn(true);
+        Mockito.when(roomService.doesRoomExist(argThat(isInvalid()))).thenReturn(false);
+
+        Mockito.when(roomService.joinRoom(VALID_ROOM_UUID))
+                .thenReturn(new ResponseJoinRoom(VALID_ROOM_NAME, VALID_AV_TOKEN, VALID_SCREEN_TOKEN, VALID_SESSION));
+        Mockito.when(roomService.joinRoom(argThat(isInvalid()))).thenThrow(new ResourceNotFoundException(""));
+
+        Mockito.when(roomService.createNewRoom(argThat(isValid()), any())).thenReturn(VALID_ROOM_UUID);
+    }
 
     @Test
     public void contexLoads() {
@@ -50,78 +72,118 @@ public class SessionControllerTest {
 
     @Test
     public void testStatus() throws Exception {
-        this.mockMvc.perform(get(URL_PREFIX + "status")).andExpect(status().isOk())
+        get("status", status().isOk())
                 .andExpect(content().string(containsString("up")));
     }
 
     @Test
-    public void testNewRoomEmailValidation() throws Exception {
+    public void testNewRoom_validEmails() throws Exception {
         RequestNewRoom roomRequest = new RequestNewRoom();
-        roomRequest.setRoomName("test123");
+        roomRequest.setRoomName(VALID_ROOM_NAME);
 
-        mockMvc.perform(
-                post(URL_PREFIX + "rooms")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(gson.toJson(roomRequest)))
-                .andExpect(status().isOk());
 
+        // no mail is valid
+        post("rooms", roomRequest, status().isOk())
+                .andExpect(jsonPath("uuid").isNotEmpty());
+
+
+        //any list of valid emails is valid
         roomRequest.setEmails(new ArrayList<>());
+        //empty list
+        post("rooms", roomRequest, status().isOk())
+                .andExpect(jsonPath("uuid").isNotEmpty());
 
         roomRequest.getEmails().add("validMail@email.com");
-        mockMvc.perform(
-                post(URL_PREFIX + "rooms")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(gson.toJson(roomRequest)))
-                .andExpect(status().isOk());
+        post("rooms", roomRequest, status().isOk())
+                .andExpect(jsonPath("uuid").isNotEmpty());
 
         roomRequest.getEmails().add("validMail2@email.com");
-        mockMvc.perform(
-                post(URL_PREFIX + "rooms")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(gson.toJson(roomRequest)))
-                .andExpect(status().isOk());
-
-        roomRequest.getEmails().add("INVALID");
-        mockMvc.perform(
-                post(URL_PREFIX + "rooms")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(gson.toJson(roomRequest)))
-                .andExpect(status().isBadRequest());
+        post("rooms", roomRequest, status().isOk())
+                .andExpect(jsonPath("uuid").isNotEmpty());
     }
 
     @Test
-    public void testInviteUsersValidation() throws Exception {
-        RequestInviteUser invite = new RequestInviteUser();
-        invite.setRoomUUID("validRoom");
+    public void testNewRoom_invalidEmails() throws Exception {
+        RequestNewRoom roomRequest = new RequestNewRoom();
+        roomRequest.setRoomName("AnyName");
 
-        mockMvc.perform(
-                post(URL_PREFIX + "rooms/users")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(gson.toJson(invite)))
-                .andExpect(status().isBadRequest());
+        roomRequest.setEmails(new ArrayList<>());
+        roomRequest.getEmails().add("INVALID");
+        post("rooms", roomRequest, status().isBadRequest());
 
-        invite.setEmails(new ArrayList<>());
+        roomRequest.getEmails().add("INVALID2");
+        post("rooms", roomRequest, status().isBadRequest());
 
-        invite.getEmails().add("validMail@email.com");
-        mockMvc.perform(
-                post(URL_PREFIX + "rooms")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(gson.toJson(invite)))
-                .andExpect(status().isOk());
-
-        invite.getEmails().add("validMail2@email.com");
-        mockMvc.perform(
-                post(URL_PREFIX + "rooms")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(gson.toJson(invite)))
-                .andExpect(status().isOk());
-
-        invite.getEmails().add("INVALID");
-        mockMvc.perform(
-                post(URL_PREFIX + "rooms")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(gson.toJson(invite)))
-                .andExpect(status().isBadRequest());
+        roomRequest.getEmails().add("INVALID3");
+        post("rooms", roomRequest, status().isBadRequest());
     }
 
+
+    @Test
+    public void testInviteUsersValidation_ValidRoom() throws Exception {
+        RequestInviteUser invite = new RequestInviteUser();
+        invite.setRoomUUID(VALID_ROOM_UUID);
+
+        post("rooms/users", invite, status().isBadRequest());
+
+        invite.setEmails(new ArrayList<>());
+        post("rooms/users", invite, status().isBadRequest());
+
+        invite.getEmails().add("validMail@email.com");
+        post("rooms/users", invite, status().isOk());
+
+        invite.getEmails().add("validMail2@email.com");
+        post("rooms/users", invite, status().isOk());
+
+        invite.getEmails().add("INVALID");
+        post("rooms/users", invite, status().isBadRequest());
+    }
+
+    @Test
+    public void testInviteUsers_InvalidRoom() throws Exception {
+        RequestInviteUser invite = new RequestInviteUser();
+        invite.setRoomUUID("invalidRoomId");
+
+        post("rooms/users", invite, status().isBadRequest());
+
+        invite.setEmails(new ArrayList<>());
+        post("rooms/users", invite, status().isBadRequest());
+
+        invite.getEmails().add("validMail@email.com");
+        post("rooms/users", invite, status().isNotFound());
+    }
+
+    @Test
+    public void testJoinRoom() throws Exception {
+        RequestJoinRoom request = new RequestJoinRoom();
+        request.setRoomUUID(VALID_ROOM_UUID);
+
+
+        post("rooms/join", request, status().isOk())
+                .andExpect(ResultMatcher.matchAll(
+                        jsonPath("roomName").value(VALID_ROOM_NAME),
+                        jsonPath("token").value(VALID_AV_TOKEN),
+                        jsonPath("secondToken").value(VALID_SCREEN_TOKEN),
+                        jsonPath("sessionId").value(VALID_SESSION)
+                ));
+
+        request.setRoomUUID("invalidRoomID");
+        post("rooms/join", request, status().isNotFound());
+    }
+
+
+    private ResultActions post(String path, Object content, ResultMatcher expectedResult) throws Exception {
+        return mockMvc.perform(
+                MockMvcRequestBuilders.post(URL_PREFIX + path)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(gson.toJson(content)))
+                .andExpect(expectedResult);
+    }
+
+    private ResultActions get(String path, ResultMatcher expectedResult) throws Exception {
+        return mockMvc.perform(
+                MockMvcRequestBuilders.get(URL_PREFIX + path)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(expectedResult);
+    }
 }

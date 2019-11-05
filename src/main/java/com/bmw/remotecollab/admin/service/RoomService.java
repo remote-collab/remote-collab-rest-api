@@ -6,6 +6,7 @@ import com.bmw.remotecollab.admin.model.Room;
 import com.bmw.remotecollab.admin.rest.exception.OpenViduException;
 import com.bmw.remotecollab.admin.rest.exception.ResourceNotFoundException;
 import com.bmw.remotecollab.admin.rest.response.ResponseJoinRoom;
+import com.bmw.remotecollab.admin.service.email.EmailList;
 import io.openvidu.java.client.OpenViduHttpException;
 import io.openvidu.java.client.OpenViduJavaClientException;
 import io.openvidu.java.client.Session;
@@ -13,6 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.validation.annotation.Validated;
 
 import java.util.List;
 import java.util.Optional;
@@ -23,6 +25,7 @@ import java.util.stream.Collectors;
  * Local implementation. No db storage up until now.
  */
 @Service
+@Validated
 public class RoomService {
 
     private static final Logger logger = LoggerFactory.getLogger(RoomService.class);
@@ -42,14 +45,13 @@ public class RoomService {
 
         Room room = new Room(roomName);
 
-        if(emails != null) {
+        if (emails != null) {
             emails.forEach(s -> room.addMember(new Member(s)));
         }
 
         roomRepository.save(room);
-        String roomId = room.getId();
-        emailService.sendInvitationEmail(roomId, room.getMembers());
-        return roomId;
+        emailService.sendInvitationEmail(room);
+        return room.getId();
     }
 
 
@@ -80,22 +82,18 @@ public class RoomService {
         }
     }
 
-    public boolean doesRoomExists(String id) {
-        return roomRepository.existsById(id);
+    public boolean doesRoomExist(String roomUUID) {
+        return roomRepository.existsById(roomUUID);
     }
 
-    public void sendUserInvitation(String roomUUID, List<String> emails) {
+    public void sendUserInvitation(String roomUUID, @EmailList(emptyListIsValid = false) List<String> emails) {
         Set<Member> newMembers = emails.stream().map(Member::new).collect(Collectors.toSet());
 
         roomRepository.findById(roomUUID)
                 .ifPresent(r -> {
-                    sendUserInvitation(r, newMembers);
+                    emailService.sendInvitationEmail(r);
                     r.addMembers(newMembers);
                     roomRepository.save(r);
                 });
-    }
-
-    private void sendUserInvitation(Room room, Set<Member> targets) {
-        emailService.sendInvitationEmail(room.getId(), targets);
     }
 }

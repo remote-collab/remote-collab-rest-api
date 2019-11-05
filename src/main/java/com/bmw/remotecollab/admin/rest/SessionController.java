@@ -12,7 +12,6 @@ import com.bmw.remotecollab.admin.service.RoomService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -45,21 +44,21 @@ public class SessionController {
     public ResponseEntity<ResponseNewRoom> createNewRoom(@RequestBody @Valid RequestNewRoom requestNewRoom) {
         String roomName = requestNewRoom.getRoomName();
         List<String> emails = requestNewRoom.getEmails();
-        String id = roomService.createNewRoom(roomName, emails);
-        logger.info("Created new room '{}' with UUID={}", roomName, id);
-        return new ResponseEntity<>(new ResponseNewRoom(id), HttpStatus.OK);
+        String roomUUID = roomService.createNewRoom(roomName, emails);
+        logger.info("Created new room '{}' with UUID={}", roomName, roomUUID);
+        return ResponseEntity.ok(new ResponseNewRoom(roomUUID));
     }
 
     @PostMapping("/rooms/users")
-    public ResponseEntity<String> inviteUser(@RequestBody @Valid RequestInviteUser requestInviteUser) {
+    public ResponseEntity inviteUser(@RequestBody @Valid RequestInviteUser requestInviteUser) throws ResourceNotFoundException {
         String roomUUID = requestInviteUser.getRoomUUID();
-        logger.debug(roomUUID);
-        boolean exists = roomService.doesRoomExists(roomUUID);
-        if (exists) {
-            List<String> emails = requestInviteUser.getEmails();
-            roomService.sendUserInvitation(roomUUID, emails);
+        logger.debug("Invite users to room {}", roomUUID);
+        if (!roomService.doesRoomExist(roomUUID)) {
+            throw new ResourceNotFoundException("Room does not exists. RoomUUID: " + roomUUID);
         }
-        return new ResponseEntity<>("", HttpStatus.OK);
+        List<String> emails = requestInviteUser.getEmails();
+        roomService.sendUserInvitation(roomUUID, emails);
+        return ResponseEntity.ok().build();
     }
 
     /**
@@ -71,9 +70,9 @@ public class SessionController {
     @PostMapping("/rooms/join")
     public ResponseEntity<ResponseJoinRoom> joinRoom(@RequestBody RequestJoinRoom requestJoinRoom) throws ResourceNotFoundException, OpenViduException {
         String roomUUID = requestJoinRoom.getRoomUUID();
-        logger.debug(roomUUID);
+        logger.debug("Join room {}", roomUUID);
         ResponseJoinRoom responseJoinRoom = roomService.joinRoom(roomUUID);
-        return new ResponseEntity<>(responseJoinRoom, HttpStatus.OK);
+        return ResponseEntity.ok(responseJoinRoom);
     }
 
     //TODO: replace with prometheus / actuator

@@ -1,6 +1,7 @@
 package com.bmw.remotecollab.admin.service;
 
 import com.bmw.remotecollab.admin.model.Member;
+import com.bmw.remotecollab.admin.model.Room;
 import com.bmw.remotecollab.admin.service.email.AwsSenderService;
 import com.bmw.remotecollab.admin.service.email.Email;
 import com.bmw.remotecollab.admin.service.email.From;
@@ -36,11 +37,13 @@ public class EmailService {
         this.templateEngine = templateEngine;
     }
 
-    void sendInvitationEmail(String roomId, Set<Member> members) {
-        logger.info("Sending invitation emails for Room: {} - Members: {}", roomId, members);
+    void sendInvitationEmail(final Room room) {
+        logger.info("Sending invitation emails for Room: {} - Members: {}", room.getId(), room.getMembers());
+
+        final Set<Member> members = room.getMembers();
 
         String subject = "Attend online meeting";
-        String body = buildBody(roomId, INVITE_TEMPLATE);
+        String body = buildBody(room, INVITE_TEMPLATE);
 
         Email.EmailBuilder emailBuilder = Email.builder();
         emailBuilder.from(new From(this.fromEmail, this.fromEmailName));
@@ -52,11 +55,12 @@ public class EmailService {
         awsSenderService.sendEmail(emailBuilder.build());
     }
 
-    private String buildBody(String roomId, String mailTemplate) {
+    private String buildBody(Room room, @SuppressWarnings("SameParameterValue") String mailTemplate) {
         Context context = new Context();
-        String url = this.linkUrl + roomId;
+        String url = this.linkUrl + room.getId();
+        context.setVariable("roomName", room.getName());
+        context.setVariable("roomUUID", room.getId());
         context.setVariable("url", url);
-        context.setVariable("roomUUID", roomId);
         return templateEngine.process(mailTemplate, context);
     }
 
