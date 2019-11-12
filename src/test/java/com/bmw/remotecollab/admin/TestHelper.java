@@ -8,7 +8,8 @@ import org.json.simple.JSONObject;
 import org.mockito.ArgumentMatcher;
 
 public class TestHelper {
-    public static final String URL_PREFIX = "/api/v1/";
+    public static final String URL_PREFIX_V1 = "/api/v1/";
+    public static final String URL_PREFIX_V2 = "/api/v2/";
     public static final String VALID_ROOM_NAME = "validRoom";
     public static final String VALID_ROOM_UUID = "validRoomUUID";
     public static final String VALID_AV_TOKEN = "validAVToken";

@@ -1,12 +1,12 @@
-package com.bmw.remotecollab.admin.rest;
+package com.bmw.remotecollab.admin.rest.v1;
 
 import com.bmw.remotecollab.admin.rest.exception.OpenViduException;
 import com.bmw.remotecollab.admin.rest.exception.ResourceNotFoundException;
-import com.bmw.remotecollab.admin.rest.requests.RequestInviteUser;
-import com.bmw.remotecollab.admin.rest.requests.RequestJoinRoom;
-import com.bmw.remotecollab.admin.rest.requests.RequestNewRoom;
-import com.bmw.remotecollab.admin.rest.response.ResponseJoinRoom;
-import com.bmw.remotecollab.admin.rest.response.ResponseNewRoom;
+import com.bmw.remotecollab.admin.rest.v1.requests.RequestInviteUser;
+import com.bmw.remotecollab.admin.rest.v1.requests.RequestJoinRoom;
+import com.bmw.remotecollab.admin.rest.v1.requests.RequestNewRoom;
+import com.bmw.remotecollab.admin.rest.v1.responses.ResponseJoinRoom;
+import com.bmw.remotecollab.admin.rest.v1.responses.ResponseNewRoom;
 import com.bmw.remotecollab.admin.service.OpenViduService;
 import com.bmw.remotecollab.admin.service.RoomService;
 import io.swagger.annotations.Api;
@@ -31,15 +31,15 @@ import java.util.List;
 @ApiResponses({
         @ApiResponse(code = 400, message = "Validation of parameter failed")})
 @RequestMapping("/api/v1")
-public class SessionController {
+public class SessionControllerV1 {
 
-    private static final Logger logger = LoggerFactory.getLogger(SessionController.class);
+    private static final Logger logger = LoggerFactory.getLogger(SessionControllerV1.class);
 
     private OpenViduService openViduService;
     private RoomService roomService;
 
     @Autowired
-    public SessionController(OpenViduService openViduService, RoomService roomService) {
+    public SessionControllerV1(OpenViduService openViduService, RoomService roomService) {
         this.openViduService = openViduService;
         this.roomService = roomService;
     }
@@ -57,7 +57,7 @@ public class SessionController {
         String roomName = requestNewRoom.getRoomName();
         List<String> emails = requestNewRoom.getEmails();
         String roomUUID = roomService.createNewRoom(roomName, emails);
-        logger.info("Created new room '{}' with UUID={}", roomName, roomUUID);
+        logger.info("V1: Created new room '{}' with UUID={}", roomName, roomUUID);
         return ResponseEntity.ok(new ResponseNewRoom(roomUUID));
     }
 
@@ -67,7 +67,7 @@ public class SessionController {
     @PostMapping("/rooms/users")
     public ResponseEntity<Void> inviteUser(@RequestBody @Valid RequestInviteUser requestInviteUser) throws ResourceNotFoundException {
         String roomUUID = requestInviteUser.getRoomUUID();
-        logger.debug("Invite users to room {}", roomUUID);
+        logger.debug("V1: Invite users to room {}", roomUUID);
         if (!roomService.doesRoomExist(roomUUID)) {
             throw new ResourceNotFoundException("Room does not exists. RoomUUID: " + roomUUID);
         }
@@ -82,9 +82,14 @@ public class SessionController {
     @PostMapping("/rooms/join")
     public ResponseEntity<ResponseJoinRoom> joinRoom(@RequestBody RequestJoinRoom requestJoinRoom) throws ResourceNotFoundException, OpenViduException {
         String roomUUID = requestJoinRoom.getRoomUUID();
-        logger.debug("Join room {}", roomUUID);
-        ResponseJoinRoom responseJoinRoom = roomService.joinRoom(roomUUID);
-        return ResponseEntity.ok(responseJoinRoom);
+        logger.debug("V1: Join room {}", roomUUID);
+        final RoomService.JoinRoomTokens tokenInfo = roomService.joinRoom(roomUUID);
+        return ResponseEntity.ok(
+                new ResponseJoinRoom(
+                        tokenInfo.roomName,
+                        tokenInfo.audioVideoToken,
+                        tokenInfo.screenShareToken,
+                        tokenInfo.sessionId));
     }
 
     //TODO: replace with prometheus / actuator

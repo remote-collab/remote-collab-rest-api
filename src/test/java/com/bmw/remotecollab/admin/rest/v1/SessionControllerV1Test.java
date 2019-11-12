@@ -1,12 +1,11 @@
-package com.bmw.remotecollab.admin.rest;
+package com.bmw.remotecollab.admin.rest.v1;
 
 import com.bmw.remotecollab.admin.dynamoDB.RoomRepository;
 import com.bmw.remotecollab.admin.rest.exception.OpenViduException;
 import com.bmw.remotecollab.admin.rest.exception.ResourceNotFoundException;
-import com.bmw.remotecollab.admin.rest.requests.RequestInviteUser;
-import com.bmw.remotecollab.admin.rest.requests.RequestJoinRoom;
-import com.bmw.remotecollab.admin.rest.requests.RequestNewRoom;
-import com.bmw.remotecollab.admin.rest.response.ResponseJoinRoom;
+import com.bmw.remotecollab.admin.rest.v1.requests.RequestInviteUser;
+import com.bmw.remotecollab.admin.rest.v1.requests.RequestJoinRoom;
+import com.bmw.remotecollab.admin.rest.v1.requests.RequestNewRoom;
 import com.bmw.remotecollab.admin.service.RoomService;
 import com.google.gson.Gson;
 import org.junit.Before;
@@ -36,11 +35,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @RunWith(SpringRunner.class)
 @SpringBootTest
 @AutoConfigureMockMvc
-public class SessionControllerTest {
+public class SessionControllerV1Test {
     private static final Gson gson = new Gson();
 
     @Autowired
-    SessionController controller;
+    SessionControllerV1 controller;
 
     @Autowired
     private MockMvc mockMvc;
@@ -57,7 +56,7 @@ public class SessionControllerTest {
         Mockito.when(roomService.doesRoomExist(argThat(isInvalid()))).thenReturn(false);
 
         Mockito.when(roomService.joinRoom(VALID_ROOM_UUID))
-                .thenReturn(new ResponseJoinRoom(VALID_ROOM_NAME, VALID_AV_TOKEN, VALID_SCREEN_TOKEN, VALID_SESSION));
+                .thenReturn(new RoomService.JoinRoomTokens(VALID_ROOM_NAME, VALID_AV_TOKEN, VALID_SCREEN_TOKEN, VALID_SESSION));
         Mockito.when(roomService.joinRoom(argThat(isInvalid()))).thenThrow(new ResourceNotFoundException(""));
 
         Mockito.when(roomService.createNewRoom(argThat(isValid()), any())).thenReturn(VALID_ROOM_UUID);
@@ -104,10 +103,8 @@ public class SessionControllerTest {
 
     @Test
     public void testNewRoom_invalidEmails() throws Exception {
-        RequestNewRoom roomRequest = new RequestNewRoom();
-        roomRequest.setRoomName("AnyName");
+        RequestNewRoom roomRequest = new RequestNewRoom("AnyName", new ArrayList<>());
 
-        roomRequest.setEmails(new ArrayList<>());
         roomRequest.getEmails().add("INVALID");
         post("rooms", roomRequest, status().isBadRequest());
 
@@ -174,7 +171,7 @@ public class SessionControllerTest {
 
     private ResultActions post(String path, Object content, ResultMatcher expectedResult) throws Exception {
         return mockMvc.perform(
-                MockMvcRequestBuilders.post(URL_PREFIX + path)
+                MockMvcRequestBuilders.post(URL_PREFIX_V1 + path)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(gson.toJson(content)))
                 .andExpect(expectedResult);
@@ -182,7 +179,7 @@ public class SessionControllerTest {
 
     private ResultActions get(String path, ResultMatcher expectedResult) throws Exception {
         return mockMvc.perform(
-                MockMvcRequestBuilders.get(URL_PREFIX + path)
+                MockMvcRequestBuilders.get(URL_PREFIX_V1 + path)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(expectedResult);
     }

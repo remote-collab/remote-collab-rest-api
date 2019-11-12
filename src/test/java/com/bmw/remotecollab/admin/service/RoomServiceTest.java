@@ -4,7 +4,6 @@ import com.bmw.remotecollab.admin.TestHelper;
 import com.bmw.remotecollab.admin.dynamoDB.RoomRepository;
 import com.bmw.remotecollab.admin.model.Room;
 import com.bmw.remotecollab.admin.rest.exception.ResourceNotFoundException;
-import com.bmw.remotecollab.admin.rest.response.ResponseJoinRoom;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -71,11 +70,11 @@ public class RoomServiceTest {
         when(openViduService.getTokenForSession(any())).thenReturn(UUID.randomUUID().toString());
 
         //- tests
-        final ResponseJoinRoom response = roomService.joinRoom(VALID_ROOM_UUID);
+        final RoomService.JoinRoomTokens response = roomService.joinRoom(VALID_ROOM_UUID);
         assertThat(response).isNotNull();
-        assertThat(response.getRoomName()).isEqualTo(VALID_ROOM_NAME);
-        assertThat(response.getToken()).isNotEmpty();
-        assertThat(response.getSecondToken()).isNotEmpty();
+        assertThat(response.roomName).isEqualTo(VALID_ROOM_NAME);
+        assertThat(response.audioVideoToken).isNotEmpty();
+        assertThat(response.screenShareToken).isNotEmpty();
     }
 
 

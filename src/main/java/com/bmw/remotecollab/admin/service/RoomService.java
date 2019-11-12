@@ -5,11 +5,11 @@ import com.bmw.remotecollab.admin.model.Member;
 import com.bmw.remotecollab.admin.model.Room;
 import com.bmw.remotecollab.admin.rest.exception.OpenViduException;
 import com.bmw.remotecollab.admin.rest.exception.ResourceNotFoundException;
-import com.bmw.remotecollab.admin.rest.response.ResponseJoinRoom;
 import com.bmw.remotecollab.admin.service.email.EmailList;
 import io.openvidu.java.client.OpenViduHttpException;
 import io.openvidu.java.client.OpenViduJavaClientException;
 import io.openvidu.java.client.Session;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,7 +55,7 @@ public class RoomService {
     }
 
 
-    public ResponseJoinRoom joinRoom(String roomUUID) throws OpenViduException, ResourceNotFoundException {
+    public JoinRoomTokens joinRoom(String roomUUID) throws OpenViduException, ResourceNotFoundException {
         logger.debug(roomUUID);
 
         final Optional<Room> roomOpt = roomRepository.findById(roomUUID);
@@ -69,7 +69,7 @@ public class RoomService {
                     String audioVideoToken = openViduService.getTokenForSession(session);
 
                     String screenShareToken = openViduService.getTokenForSession(session);
-                    return new ResponseJoinRoom(room.getName(), audioVideoToken, screenShareToken, session.getSessionId());
+                    return new JoinRoomTokens(room.getName(), audioVideoToken, screenShareToken, session.getSessionId());
                 } catch (OpenViduJavaClientException | OpenViduHttpException e) {
                     logger.warn("Problem calling openvidu server.", e);
                     throw new OpenViduException("Problem calling openvidu server.");
@@ -95,5 +95,14 @@ public class RoomService {
                     r.addMembers(newMembers);
                     roomRepository.save(r);
                 });
+    }
+
+
+    @RequiredArgsConstructor
+    public static class JoinRoomTokens {
+        public final String roomName;
+        public final String audioVideoToken;
+        public final String screenShareToken;
+        public final String sessionId;
     }
 }

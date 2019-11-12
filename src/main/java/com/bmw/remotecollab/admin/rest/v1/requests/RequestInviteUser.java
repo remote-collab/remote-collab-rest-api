@@ -1,14 +1,18 @@
-package com.bmw.remotecollab.admin.rest.requests;
+package com.bmw.remotecollab.admin.rest.v1.requests;
 
 import com.bmw.remotecollab.admin.service.email.EmailList;
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.List;
 
-@Getter
-@Setter
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@ApiModel("RequestInviteUserV1")
 public class RequestInviteUser {
 
     @ApiModelProperty(value = "The UUID of the room, you want to invite people to.", required = true)
