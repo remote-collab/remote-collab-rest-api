@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@ApiModel("ResponeJoinRoomV2")
+@ApiModel("ResponseJoinRoomV2")
 public class ResponseJoinRoom {
     @ApiModelProperty(value = "The name of the room, you wanted to join.")
     private String roomName;

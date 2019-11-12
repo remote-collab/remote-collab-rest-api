@@ -11,7 +11,7 @@ import java.util.Date;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@ApiModel("ResponeNewRoomV2")
+@ApiModel("ResponseNewRoomV2")
 public class ResponseNewRoom {
 
     @ApiModelProperty(value = "The UUID of the room, you created.")
