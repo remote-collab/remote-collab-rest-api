@@ -18,7 +18,7 @@ public class RequestInviteUser {
     @ApiModelProperty(value = "The UUID of the room, you want to invite people to.", required = true)
     private String roomUUID;
 
-    @ApiModelProperty(value = "A non-null, non-empty list of valid email adresses.", required = true)
+    @ApiModelProperty(value = "A non-null, non-empty list of valid email addresses.", required = true)
     @EmailList(emptyListIsValid = false)
     private List<String> emails;
 
