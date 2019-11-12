@@ -1,5 +1,6 @@
 package com.bmw.remotecollab.admin.rest.v2;
 
+import com.bmw.remotecollab.admin.model.Room;
 import com.bmw.remotecollab.admin.rest.exception.OpenViduException;
 import com.bmw.remotecollab.admin.rest.exception.ResourceNotFoundException;
 import com.bmw.remotecollab.admin.rest.v2.requests.RequestInviteUser;
@@ -55,9 +56,9 @@ public class SessionControllerV2 {
     public ResponseEntity<ResponseNewRoom> createNewRoom(@RequestBody @Valid RequestNewRoom requestNewRoom) {
         String roomName = requestNewRoom.getRoomName();
         List<String> emails = requestNewRoom.getEmails();
-        String roomUUID = roomService.createNewRoom(roomName, emails);
-        logger.info("V2: Created new room '{}' with UUID={}", roomName, roomUUID);
-        return ResponseEntity.ok(new ResponseNewRoom(roomUUID));
+        Room room = roomService.createNewRoom(roomName, emails);
+        logger.info("V2: Created new room '{}'", room);
+        return ResponseEntity.ok(new ResponseNewRoom(room.getId(), room.getCreatedAt(), room.getName()));
     }
 
     @ApiOperation(value = "Send invitation emails to users for an existing remote collaboration room.",

@@ -46,21 +46,24 @@ public class RoomServiceTest {
 
     @Test
     public void createNewRoom() {
-        String uuid = roomService.createNewRoom(VALID_ROOM_NAME, null);
-        assertThat(uuid).isNotBlank();
+        Room result1 = roomService.createNewRoom(VALID_ROOM_NAME, null);
+        assertThat(result1.getId()).isNotBlank();
+        assertThat(result1.getMembers().size()).isEqualTo(0);
 
         List<String> emails = new ArrayList<>();
-        String uuid2 = roomService.createNewRoom(VALID_ROOM_NAME, emails);
-        assertThat(uuid2).isNotBlank();
+        Room result2 = roomService.createNewRoom(VALID_ROOM_NAME, emails);
+        assertThat(result2.getId()).isNotBlank();
+        assertThat(result2.getMembers().size()).isEqualTo(0);
 
         emails.add("any@email.com");
-        String uuid3 = roomService.createNewRoom(VALID_ROOM_NAME, emails);
-        assertThat(uuid3).isNotBlank();
+        Room result3 = roomService.createNewRoom(VALID_ROOM_NAME, emails);
+        assertThat(result3.getId()).isNotBlank();
+        assertThat(result3.getMembers().size()).isEqualTo(1);
 
 
-        assertThat(uuid).isNotEqualTo(uuid2);
-        assertThat(uuid2).isNotEqualTo(uuid3);
-        assertThat(uuid3).isNotEqualTo(uuid);
+        assertThat(result1.getId()).isNotEqualTo(result2.getId());
+        assertThat(result2.getId()).isNotEqualTo(result3.getId());
+        assertThat(result3.getId()).isNotEqualTo(result1.getId());
     }
 
     @Test

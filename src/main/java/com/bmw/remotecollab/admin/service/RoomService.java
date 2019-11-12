@@ -41,7 +41,7 @@ public class RoomService {
         this.openViduService = openViduService;
     }
 
-    public String createNewRoom(String roomName, List<String> emails) {
+    public Room createNewRoom(String roomName, List<String> emails) {
 
         Room room = new Room(roomName);
 
@@ -51,7 +51,7 @@ public class RoomService {
 
         roomRepository.save(room);
         emailService.sendInvitationEmail(room);
-        return room.getId();
+        return room;
     }
 
 

@@ -1,6 +1,7 @@
 package com.bmw.remotecollab.admin.rest.v2;
 
 import com.bmw.remotecollab.admin.dynamoDB.RoomRepository;
+import com.bmw.remotecollab.admin.model.Room;
 import com.bmw.remotecollab.admin.rest.exception.OpenViduException;
 import com.bmw.remotecollab.admin.rest.exception.ResourceNotFoundException;
 import com.bmw.remotecollab.admin.rest.v2.requests.RequestInviteUser;
@@ -59,11 +60,11 @@ public class SessionControllerV2Test {
                 .thenReturn(new RoomService.JoinRoomTokens(VALID_ROOM_NAME, VALID_AV_TOKEN, VALID_SCREEN_TOKEN, VALID_SESSION));
         Mockito.when(roomService.joinRoom(argThat(isInvalid()))).thenThrow(new ResourceNotFoundException(""));
 
-        Mockito.when(roomService.createNewRoom(argThat(isValid()), any())).thenReturn(VALID_ROOM_UUID);
+        Mockito.when(roomService.createNewRoom(argThat(isValid()), any())).thenReturn(new Room(VALID_ROOM_NAME));
     }
 
     @Test
-    public void contexLoads() {
+    public void contextLoads() {
         assertThat(controller).isNotNull();
         assertThat(mockMvc).isNotNull();
     }
