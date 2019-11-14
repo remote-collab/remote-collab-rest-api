@@ -10,32 +10,19 @@ services:
     environment:
       openvidu.secret: MY_SECRET
 
-  viper-service-admin:
-    build: .
-    hostname: viper-service-admin
-    container_name: viper-service-admin
-    ports:
-      - 8080:8080
-    environment:
-      amazon.dynamodb.endpoint: http://dynamodb-session:8000/
-      # Note: even though these keys are garbage values, access key and
-      # secret key are still required. Otherwise, `aws-sdk` will attempt
-      # to read credentials from Amazon's service and fail.
-      amazon.aws.accesskey: ${AWS_ACCESS_KEY}
-      amazon.aws.secretkey: ${AWS_SECRET_KEY}
-      openvidu.secret: MY_SECRET
-      openvidu.url: https://openvidu-server:4443/
-    depends_on:
-      - dynamodb-session
-
   dynamodb-session:
     image: 'amazon/dynamodb-local:latest'
     container_name: dynamodb-session
     hostname: dynamodb-session
 
-  viper-ui-standalone:
-    image: viper-ui-standalone
-    hostname: viper-ui-standalone
-    container_name: viper-ui-standalone
+  remote-collab-rest-api:
+    build: .
+    hostname: remote-collab-rest-api
+    container_name: remote-collab-rest-api
     ports:
-      - 8081:8080
+      - 8080:8080
+    environment:
+      AWS_ACCESS_KEY_ID: 111
+      AWS_SECRET_KEY: 222
+    depends_on:
+      - dynamodb-session
