@@ -47,4 +47,4 @@ yarn-error.log*
 *.p12
 
 deploy-service.sh
-application-prod.properties
+src/main/resources/application-prod.properties
