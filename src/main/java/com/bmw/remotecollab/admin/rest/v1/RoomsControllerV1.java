@@ -28,19 +28,19 @@ import java.util.List;
 
 @RestController
 @Validated
-@Api(produces = MediaType.APPLICATION_JSON_VALUE)
+@Api(tags = {"/rooms"}, produces = MediaType.APPLICATION_JSON_VALUE)
 @ApiResponses({
         @ApiResponse(code = 400, message = "Validation of parameter failed")})
 @RequestMapping("/api/v1")
-public class SessionControllerV1 {
+public class RoomsControllerV1 {
 
-    private static final Logger logger = LoggerFactory.getLogger(SessionControllerV1.class);
+    private static final Logger logger = LoggerFactory.getLogger(RoomsControllerV1.class);
 
     private OpenViduService openViduService;
     private RoomService roomService;
 
     @Autowired
-    public SessionControllerV1(OpenViduService openViduService, RoomService roomService) {
+    public RoomsControllerV1(OpenViduService openViduService, RoomService roomService) {
         this.openViduService = openViduService;
         this.roomService = roomService;
     }

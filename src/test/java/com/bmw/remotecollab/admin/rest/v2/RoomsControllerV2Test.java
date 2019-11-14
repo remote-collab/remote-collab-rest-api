@@ -1,12 +1,11 @@
-package com.bmw.remotecollab.admin.rest.v1;
+package com.bmw.remotecollab.admin.rest.v2;
 
 import com.bmw.remotecollab.admin.dynamoDB.RoomRepository;
 import com.bmw.remotecollab.admin.model.Room;
 import com.bmw.remotecollab.admin.rest.exception.OpenViduException;
 import com.bmw.remotecollab.admin.rest.exception.ResourceNotFoundException;
-import com.bmw.remotecollab.admin.rest.v1.requests.RequestInviteUser;
-import com.bmw.remotecollab.admin.rest.v1.requests.RequestJoinRoom;
-import com.bmw.remotecollab.admin.rest.v1.requests.RequestNewRoom;
+import com.bmw.remotecollab.admin.rest.v2.requests.RequestInviteUser;
+import com.bmw.remotecollab.admin.rest.v2.requests.RequestNewRoom;
 import com.bmw.remotecollab.admin.service.RoomService;
 import com.google.gson.Gson;
 import org.junit.Before;
@@ -22,6 +21,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.ResultMatcher;
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import java.util.ArrayList;
@@ -36,11 +36,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @RunWith(SpringRunner.class)
 @SpringBootTest
 @AutoConfigureMockMvc
-public class SessionControllerV1Test {
+public class RoomsControllerV2Test {
     private static final Gson gson = new Gson();
 
     @Autowired
-    SessionControllerV1 controller;
+    RoomsControllerV2 controller;
 
     @Autowired
     private MockMvc mockMvc;
@@ -69,7 +69,6 @@ public class SessionControllerV1Test {
         assertThat(mockMvc).isNotNull();
     }
 
-
     @Test
     public void testStatus() throws Exception {
         get("status", status().isOk())
@@ -78,8 +77,7 @@ public class SessionControllerV1Test {
 
     @Test
     public void testNewRoom_validEmails() throws Exception {
-        RequestNewRoom roomRequest = new RequestNewRoom();
-        roomRequest.setRoomName(VALID_ROOM_NAME);
+        RequestNewRoom roomRequest = new RequestNewRoom(VALID_ROOM_NAME, null);
 
 
         // no mail is valid
@@ -88,7 +86,7 @@ public class SessionControllerV1Test {
 
 
         //any list of valid emails is valid
-        roomRequest.setEmails(new ArrayList<>());
+        roomRequest = new RequestNewRoom(VALID_ROOM_NAME, new ArrayList<>());
         //empty list
         post("rooms", roomRequest, status().isOk())
                 .andExpect(jsonPath("uuid").isNotEmpty());
@@ -106,6 +104,7 @@ public class SessionControllerV1Test {
     public void testNewRoom_invalidEmails() throws Exception {
         RequestNewRoom roomRequest = new RequestNewRoom("AnyName", new ArrayList<>());
 
+
         roomRequest.getEmails().add("INVALID");
         post("rooms", roomRequest, status().isBadRequest());
 
@@ -119,68 +118,68 @@ public class SessionControllerV1Test {
 
     @Test
     public void testInviteUsersValidation_ValidRoom() throws Exception {
-        RequestInviteUser invite = new RequestInviteUser();
-        invite.setRoomUUID(VALID_ROOM_UUID);
+        RequestInviteUser invite = new RequestInviteUser(null);
 
-        post("rooms/users", invite, status().isBadRequest());
+        post("rooms/{roomUUID}/users", invite, status().isBadRequest(), VALID_ROOM_UUID);
 
-        invite.setEmails(new ArrayList<>());
-        post("rooms/users", invite, status().isBadRequest());
+        invite = new RequestInviteUser(new ArrayList<>());
+        post("rooms/{roomUUID}/users", invite, status().isBadRequest(), VALID_ROOM_UUID);
 
         invite.getEmails().add("validMail@email.com");
-        post("rooms/users", invite, status().isOk());
+        post("rooms/{roomUUID}/users", invite, status().isOk(), VALID_ROOM_UUID);
 
         invite.getEmails().add("validMail2@email.com");
-        post("rooms/users", invite, status().isOk());
+        post("rooms/{roomUUID}/users", invite, status().isOk(), VALID_ROOM_UUID);
 
         invite.getEmails().add("INVALID");
-        post("rooms/users", invite, status().isBadRequest());
+        post("rooms/{roomUUID}/users", invite, status().isBadRequest(), VALID_ROOM_UUID);
     }
 
     @Test
     public void testInviteUsers_InvalidRoom() throws Exception {
-        RequestInviteUser invite = new RequestInviteUser();
-        invite.setRoomUUID("invalidRoomId");
+        RequestInviteUser invite = new RequestInviteUser(null);
 
-        post("rooms/users", invite, status().isBadRequest());
+        //no emails are not ok
+        post("rooms/{roomUUID}/users", invite, status().isBadRequest(), "invalidRoomUUID");
 
-        invite.setEmails(new ArrayList<>());
-        post("rooms/users", invite, status().isBadRequest());
+        //empty email list is not ok
+        invite = new RequestInviteUser(new ArrayList<>());
+        post("rooms/{roomUUID}/users", invite, status().isBadRequest(), "invalidRoomUUID");
 
+        //correct email for unknown room is not found
         invite.getEmails().add("validMail@email.com");
-        post("rooms/users", invite, status().isNotFound());
+        post("rooms/{roomUUID}/users", invite, status().isNotFound(), "invalidRoomUUID");
     }
 
     @Test
     public void testJoinRoom() throws Exception {
-        RequestJoinRoom request = new RequestJoinRoom();
-        request.setRoomUUID(VALID_ROOM_UUID);
-
-
-        post("rooms/join", request, status().isOk())
+        post("rooms/{roomUUID}/join", status().isOk(), VALID_ROOM_UUID)
                 .andExpect(ResultMatcher.matchAll(
                         jsonPath("roomName").value(VALID_ROOM_NAME),
-                        jsonPath("token").value(VALID_AV_TOKEN),
-                        jsonPath("secondToken").value(VALID_SCREEN_TOKEN),
+                        jsonPath("audioVideoToken").value(VALID_AV_TOKEN),
+                        jsonPath("screenShareToken").value(VALID_SCREEN_TOKEN),
                         jsonPath("sessionId").value(VALID_SESSION)
                 ));
 
-        request.setRoomUUID("invalidRoomID");
-        post("rooms/join", request, status().isNotFound());
+        post("rooms/{roomUUID}/join", status().isNotFound(), "invalidRoomUUID");
     }
 
-
-    private ResultActions post(String path, Object content, ResultMatcher expectedResult) throws Exception {
-        return mockMvc.perform(
-                MockMvcRequestBuilders.post(URL_PREFIX_V1 + path)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(gson.toJson(content)))
-                .andExpect(expectedResult);
+    private ResultActions post(String path, ResultMatcher expectedResult, Object... pathParams) throws Exception {
+        return post(path, null, expectedResult, pathParams);
     }
 
-    private ResultActions get(String path, ResultMatcher expectedResult) throws Exception {
+    private ResultActions post(String path, Object content, ResultMatcher expectedResult, Object... pathParams) throws Exception {
+        final MockHttpServletRequestBuilder request = MockMvcRequestBuilders.post(URL_PREFIX_V2 + path, pathParams);
+        if (content != null) {
+            request.contentType(MediaType.APPLICATION_JSON)
+                    .content(gson.toJson(content));
+        }
+        return mockMvc.perform(request).andExpect(expectedResult);
+    }
+
+    private ResultActions get(String path, ResultMatcher expectedResult, Object... pathParams) throws Exception {
         return mockMvc.perform(
-                MockMvcRequestBuilders.get(URL_PREFIX_V1 + path)
+                MockMvcRequestBuilders.get(URL_PREFIX_V2 + path, pathParams)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(expectedResult);
     }

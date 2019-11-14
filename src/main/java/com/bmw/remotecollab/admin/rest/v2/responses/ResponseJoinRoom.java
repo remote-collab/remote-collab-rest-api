@@ -1,6 +1,5 @@
 package com.bmw.remotecollab.admin.rest.v2.responses;
 
-import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -9,7 +8,6 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@ApiModel("ResponseJoinRoomV2")
 public class ResponseJoinRoom {
     @ApiModelProperty(value = "The name of the room, you wanted to join.")
     private String roomName;
