@@ -62,7 +62,8 @@ public class RoomsControllerV1 {
         return ResponseEntity.ok(new ResponseNewRoom(room.getId()));
     }
 
-    @ApiOperation(value = "Send invitation emails to users for an existing remote collaboration room.",
+    @ApiOperation(hidden = true,
+            value = "Send invitation emails to users for an existing remote collaboration room.",
             notes = "Via this endpoint, you can send invitation emails to users which should participate in the " +
                     "remote collaboration session.")
     @PostMapping("/rooms/users")
