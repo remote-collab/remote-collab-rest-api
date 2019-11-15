@@ -34,6 +34,9 @@ The following sections explain how to build, run and test this service on a loca
 
 The Service's REST resources can now be tested with the integrated `swagger-ui` under [http://localhost:8080/swagger-ui.html](http://localhost:8080/swagger-ui.html)
 
+`Note: When creating a new room usually an email will be sent to the list of users provided in the request payload. Since this functionality has not been
+implemented for local testing yet, no emails will be sent.`
+
 ## Run with integrated sample UI  
 
 There's a sample project demonstrating how this service can be integrated

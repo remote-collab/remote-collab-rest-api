@@ -15,22 +15,36 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
 public class SwaggerConfig {
 
     @Bean
-    public Docket api() {
+    public Docket apiV1() {
         return new Docket(DocumentationType.SWAGGER_2)
+                .groupName("API Version 1")
                 .select()
                 .apis(RequestHandlerSelectors
                         .basePackage("com.bmw.remotecollab"))
-                .paths(PathSelectors.any())
+                .paths(PathSelectors.ant("/api/v1/**"))
                 .build()
-                .apiInfo(apiInfo())
-        ;
+                .apiInfo(apiInfo("Version 1"));
     }
 
-    private ApiInfo apiInfo() {
-        return new ApiInfoBuilder().title("Remote Collaboration REST API")
+    @Bean
+    public Docket apiV2() {
+        return new Docket(DocumentationType.SWAGGER_2)
+                .groupName("API Version 2")
+                .select()
+                .apis(RequestHandlerSelectors
+                        .basePackage("com.bmw.remotecollab"))
+                .paths(PathSelectors.ant("/api/v2/**"))
+                .build()
+                .apiInfo(apiInfo("Version 2"));
+    }
+
+
+    private ApiInfo apiInfo(String version) {
+        return new ApiInfoBuilder().title("Viper Remote Collaboration REST API")
                 .description(
                         "This REST API is used to manage Remote Collaboration Sessions (called Rooms).\n\n" +
                                 "Creation of such rooms and invitation of users therein.")
+                .version(version)
                 .build();
     }
 }

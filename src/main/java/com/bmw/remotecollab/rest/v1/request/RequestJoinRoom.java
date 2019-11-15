@@ -1,11 +1,13 @@
-package com.bmw.remotecollab.rest.requests;
+package com.bmw.remotecollab.rest.v1.request;
 
 import io.swagger.annotations.ApiModelProperty;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-@Getter
-@Setter
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class RequestJoinRoom {
 
     @ApiModelProperty(value = "The UUID of the room, you want to join.", required = true)

@@ -1,12 +1,12 @@
-package com.bmw.remotecollab.rest;
+package com.bmw.remotecollab.rest.v2;
 
+import com.bmw.remotecollab.model.Room;
 import com.bmw.remotecollab.rest.exception.OpenViduException;
 import com.bmw.remotecollab.rest.exception.ResourceNotFoundException;
-import com.bmw.remotecollab.rest.requests.RequestInviteUser;
-import com.bmw.remotecollab.rest.requests.RequestJoinRoom;
-import com.bmw.remotecollab.rest.requests.RequestNewRoom;
-import com.bmw.remotecollab.rest.response.ResponseJoinRoom;
-import com.bmw.remotecollab.rest.response.ResponseNewRoom;
+import com.bmw.remotecollab.rest.v2.request.RequestInviteUser;
+import com.bmw.remotecollab.rest.v2.request.RequestNewRoom;
+import com.bmw.remotecollab.rest.v2.response.ResponseJoinRoom;
+import com.bmw.remotecollab.rest.v2.response.ResponseNewRoom;
 import com.bmw.remotecollab.service.OpenViduService;
 import com.bmw.remotecollab.service.RoomService;
 import io.swagger.annotations.Api;
@@ -27,19 +27,19 @@ import java.util.List;
 
 @RestController
 @Validated
-@Api(produces = MediaType.APPLICATION_JSON_VALUE)
+@Api(tags = {"/rooms"}, produces = MediaType.APPLICATION_JSON_VALUE)
 @ApiResponses({
         @ApiResponse(code = 400, message = "Validation of parameter failed")})
-@RequestMapping("/api/v1")
-public class SessionController {
+@RequestMapping("/api/v2")
+public class RoomControllerV2 {
 
-    private static final Logger logger = LoggerFactory.getLogger(SessionController.class);
+    private static final Logger logger = LoggerFactory.getLogger(RoomControllerV2.class);
 
     private OpenViduService openViduService;
     private RoomService roomService;
 
     @Autowired
-    public SessionController(OpenViduService openViduService, RoomService roomService) {
+    public RoomControllerV2(OpenViduService openViduService, RoomService roomService) {
         this.openViduService = openViduService;
         this.roomService = roomService;
     }
@@ -56,18 +56,18 @@ public class SessionController {
     public ResponseEntity<ResponseNewRoom> createNewRoom(@RequestBody @Valid RequestNewRoom requestNewRoom) {
         String roomName = requestNewRoom.getRoomName();
         List<String> emails = requestNewRoom.getEmails();
-        String roomUUID = roomService.createNewRoom(roomName, emails);
-        logger.info("Created new room '{}' with UUID={}", roomName, roomUUID);
-        return ResponseEntity.ok(new ResponseNewRoom(roomUUID));
+        Room room = roomService.createNewRoom(roomName, emails);
+        logger.info("V2: Created new room '{}'", room);
+        return ResponseEntity.ok(new ResponseNewRoom(room.getId(), room.getCreatedAt(), room.getName()));
     }
 
-    @ApiOperation(value = "Send invitation emails to users for an existing remote collaboration room.",
+    @ApiOperation(hidden = true,
+            value = "Send invitation emails to users for an existing remote collaboration room.",
             notes = "Via this endpoint, you can send invitation emails to users which should participate in the " +
                     "remote collaboration session.")
-    @PostMapping("/rooms/users")
-    public ResponseEntity<Void> inviteUser(@RequestBody @Valid RequestInviteUser requestInviteUser) throws ResourceNotFoundException {
-        String roomUUID = requestInviteUser.getRoomUUID();
-        logger.debug("Invite users to room {}", roomUUID);
+    @PostMapping("/rooms/{roomUUID}/users")
+    public ResponseEntity<Void> inviteUser(@PathVariable("roomUUID") final String roomUUID, @RequestBody @Valid RequestInviteUser requestInviteUser) throws ResourceNotFoundException {
+        logger.debug("V2: Invite users to room {}", roomUUID);
         if (!roomService.doesRoomExist(roomUUID)) {
             throw new ResourceNotFoundException("Room does not exists. RoomUUID: " + roomUUID);
         }
@@ -79,12 +79,16 @@ public class SessionController {
 
     @ApiOperation(value = "Join an existing room.",
             notes = "Via this endpoint, you can acquire tokens to join a webRTC session for an existing room.")
-    @PostMapping("/rooms/join")
-    public ResponseEntity<ResponseJoinRoom> joinRoom(@RequestBody RequestJoinRoom requestJoinRoom) throws ResourceNotFoundException, OpenViduException {
-        String roomUUID = requestJoinRoom.getRoomUUID();
-        logger.debug("Join room {}", roomUUID);
-        ResponseJoinRoom responseJoinRoom = roomService.joinRoom(roomUUID);
-        return ResponseEntity.ok(responseJoinRoom);
+    @PostMapping("/rooms/{roomUUID}/join")
+    public ResponseEntity<ResponseJoinRoom> joinRoom(@PathVariable("roomUUID") final String roomUUID) throws ResourceNotFoundException, OpenViduException {
+        logger.debug("V2: Join room {}", roomUUID);
+        final RoomService.JoinRoomTokens tokenInfo = roomService.joinRoom(roomUUID);
+        return ResponseEntity.ok(
+                new ResponseJoinRoom(
+                        tokenInfo.roomName,
+                        tokenInfo.audioVideoToken,
+                        tokenInfo.screenShareToken,
+                        tokenInfo.sessionId));
     }
 
     //TODO: replace with prometheus / actuator

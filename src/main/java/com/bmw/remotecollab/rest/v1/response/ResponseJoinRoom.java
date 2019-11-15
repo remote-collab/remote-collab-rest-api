@@ -1,20 +1,22 @@
-package com.bmw.remotecollab.rest.response;
+package com.bmw.remotecollab.rest.v1.response;
 
+import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
-import lombok.Getter;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-@Getter
+@Data
+@NoArgsConstructor
 @AllArgsConstructor
+@ApiModel("ResponseJoinRoomV1")
 public class ResponseJoinRoom {
     @ApiModelProperty(value = "The name of the room, you wanted to join.")
     private String roomName;
 
-    //TODO: Rename after ITFair to audioVideoToken
     @ApiModelProperty(value = "The webRTC token to share your audio and video (Camera) with the room.")
     private String token;
 
-    //TODO: Rename after ITFair to screenShareToken
     @ApiModelProperty(value = "The webRTC token to share your screen with the room.")
     private String secondToken;
 

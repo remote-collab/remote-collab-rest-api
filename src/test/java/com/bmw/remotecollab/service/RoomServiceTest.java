@@ -4,7 +4,7 @@ import com.bmw.remotecollab.TestHelper;
 import com.bmw.remotecollab.dynamodb.RoomRepository;
 import com.bmw.remotecollab.model.Room;
 import com.bmw.remotecollab.rest.exception.ResourceNotFoundException;
-import com.bmw.remotecollab.rest.response.ResponseJoinRoom;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import static com.bmw.remotecollab.TestHelper.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
@@ -40,41 +41,44 @@ public class RoomServiceTest {
 
     @Before
     public void beforeTest() {
-        when(roomRepository.findById(argThat(TestHelper.isValid()))).thenReturn(Optional.of(TestHelper.getValidRoom()));
-        when(roomRepository.existsById(argThat(TestHelper.isValid()))).thenReturn(true);
+        when(roomRepository.findById(argThat(isValid()))).thenReturn(Optional.of(TestHelper.getValidRoom()));
+        when(roomRepository.existsById(argThat(isValid()))).thenReturn(true);
     }
 
     @Test
     public void createNewRoom() {
-        String uuid = roomService.createNewRoom(TestHelper.VALID_ROOM_NAME, null);
-        assertThat(uuid).isNotBlank();
+        Room result1 = roomService.createNewRoom(VALID_ROOM_NAME, null);
+        assertThat(result1.getId()).isNotBlank();
+        assertThat(result1.getMembers().size()).isEqualTo(0);
 
         List<String> emails = new ArrayList<>();
-        String uuid2 = roomService.createNewRoom(TestHelper.VALID_ROOM_NAME, emails);
-        assertThat(uuid2).isNotBlank();
+        Room result2 = roomService.createNewRoom(VALID_ROOM_NAME, emails);
+        assertThat(result2.getId()).isNotBlank();
+        assertThat(result2.getMembers().size()).isEqualTo(0);
 
         emails.add("any@email.com");
-        String uuid3 = roomService.createNewRoom(TestHelper.VALID_ROOM_NAME, emails);
-        assertThat(uuid3).isNotBlank();
+        Room result3 = roomService.createNewRoom(VALID_ROOM_NAME, emails);
+        assertThat(result3.getId()).isNotBlank();
+        assertThat(result3.getMembers().size()).isEqualTo(1);
 
 
-        assertThat(uuid).isNotEqualTo(uuid2);
-        assertThat(uuid2).isNotEqualTo(uuid3);
-        assertThat(uuid3).isNotEqualTo(uuid);
+        assertThat(result1.getId()).isNotEqualTo(result2.getId());
+        assertThat(result2.getId()).isNotEqualTo(result3.getId());
+        assertThat(result3.getId()).isNotEqualTo(result1.getId());
     }
 
     @Test
     public void joinRoom() throws Exception {
         //- setup
-        when(openViduService.createSession(anyString())).thenReturn(TestHelper.VALID_OPENVIDU_SESSION);
+        when(openViduService.createSession(anyString())).thenReturn(VALID_OPENVIDU_SESSION);
         when(openViduService.getTokenForSession(any())).thenReturn(UUID.randomUUID().toString());
 
         //- tests
-        final ResponseJoinRoom response = roomService.joinRoom(TestHelper.VALID_ROOM_UUID);
+        final RoomService.JoinRoomTokens response = roomService.joinRoom(VALID_ROOM_UUID);
         assertThat(response).isNotNull();
-        assertThat(response.getRoomName()).isEqualTo(TestHelper.VALID_ROOM_NAME);
-        assertThat(response.getToken()).isNotEmpty();
-        assertThat(response.getSecondToken()).isNotEmpty();
+        assertThat(response.roomName).isEqualTo(VALID_ROOM_NAME);
+        assertThat(response.audioVideoToken).isNotEmpty();
+        assertThat(response.screenShareToken).isNotEmpty();
     }
 
 
@@ -88,12 +92,12 @@ public class RoomServiceTest {
     public void joinRoom_createSessionFails_throwsNotFound() throws Exception {
         when(openViduService.createSession(anyString())).thenReturn(null);
 
-        roomService.joinRoom(TestHelper.VALID_ROOM_UUID);
+        roomService.joinRoom(VALID_ROOM_UUID);
     }
 
     @Test
     public void doesRoomExist() {
-        boolean exists = roomService.doesRoomExist(TestHelper.VALID_ROOM_UUID);
+        boolean exists = roomService.doesRoomExist(VALID_ROOM_UUID);
         assertThat(exists).isTrue();
 
         exists = roomService.doesRoomExist("invalidRoomUUID");
@@ -117,7 +121,7 @@ public class RoomServiceTest {
         emails.add("2ndValid@email.com");
         emails.add("email@same.com");
         emails.add("email@same.com");
-        roomService.sendUserInvitation(TestHelper.VALID_ROOM_UUID, emails);
+        roomService.sendUserInvitation(VALID_ROOM_UUID, emails);
 
         verify(roomRepository).save(roomCaptor.capture());
         assertThat(roomCaptor.getValue().getMembers().size()).isEqualTo(3);
@@ -127,7 +131,7 @@ public class RoomServiceTest {
         assertThat(usedRoom.getId()).isNotEmpty();
         //only three receivers because one mail is a duplicate
         assertThat(usedRoom.getMembers().size()).isEqualTo(3);
-        assertThat(usedRoom.getName()).isEqualTo(TestHelper.VALID_ROOM_NAME);
+        assertThat(usedRoom.getName()).isEqualTo(VALID_ROOM_NAME);
     }
 
     @Test
@@ -142,21 +146,21 @@ public class RoomServiceTest {
     public void sendUserInvitation_invalidEmail_throwException() {
         List<String> emails = new ArrayList<>();
         emails.add("INVALID EMAIL ADDRESS");
-        roomService.sendUserInvitation(TestHelper.VALID_ROOM_UUID, emails);
+        roomService.sendUserInvitation(VALID_ROOM_UUID, emails);
         verify(emailService, never()).sendInvitationEmail(any());
     }
 
     @Test(expected = ConstraintViolationException.class)
     public void sendUserInvitation_nullEmail_throwException() {
         //noinspection ConstantConditions
-        roomService.sendUserInvitation(TestHelper.VALID_ROOM_UUID, null);
+        roomService.sendUserInvitation(VALID_ROOM_UUID, null);
         verify(emailService, never()).sendInvitationEmail(any());
     }
 
     @Test(expected = ConstraintViolationException.class)
     public void sendUserInvitation_emptyEmail_throwException() {
         List<String> emails = new ArrayList<>();
-        roomService.sendUserInvitation(TestHelper.VALID_ROOM_UUID, emails);
+        roomService.sendUserInvitation(VALID_ROOM_UUID, emails);
         verify(emailService, never()).sendInvitationEmail(any());
     }
 
@@ -164,7 +168,7 @@ public class RoomServiceTest {
     public void sendUserInvitation_emptyEmail2_throwException() {
         List<String> emails = new ArrayList<>();
         emails.add("");
-        roomService.sendUserInvitation(TestHelper.VALID_ROOM_UUID, emails);
+        roomService.sendUserInvitation(VALID_ROOM_UUID, emails);
         verify(emailService, never()).sendInvitationEmail(any());
     }
 }
