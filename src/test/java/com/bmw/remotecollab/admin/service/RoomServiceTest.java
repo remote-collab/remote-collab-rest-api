@@ -4,7 +4,6 @@ import com.bmw.remotecollab.admin.TestHelper;
 import com.bmw.remotecollab.admin.dynamoDB.RoomRepository;
 import com.bmw.remotecollab.admin.model.Room;
 import com.bmw.remotecollab.admin.rest.exception.ResourceNotFoundException;
-import com.bmw.remotecollab.admin.rest.response.ResponseJoinRoom;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -47,21 +46,24 @@ public class RoomServiceTest {
 
     @Test
     public void createNewRoom() {
-        String uuid = roomService.createNewRoom(VALID_ROOM_NAME, null);
-        assertThat(uuid).isNotBlank();
+        Room result1 = roomService.createNewRoom(VALID_ROOM_NAME, null);
+        assertThat(result1.getId()).isNotBlank();
+        assertThat(result1.getMembers().size()).isEqualTo(0);
 
         List<String> emails = new ArrayList<>();
-        String uuid2 = roomService.createNewRoom(VALID_ROOM_NAME, emails);
-        assertThat(uuid2).isNotBlank();
+        Room result2 = roomService.createNewRoom(VALID_ROOM_NAME, emails);
+        assertThat(result2.getId()).isNotBlank();
+        assertThat(result2.getMembers().size()).isEqualTo(0);
 
         emails.add("any@email.com");
-        String uuid3 = roomService.createNewRoom(VALID_ROOM_NAME, emails);
-        assertThat(uuid3).isNotBlank();
+        Room result3 = roomService.createNewRoom(VALID_ROOM_NAME, emails);
+        assertThat(result3.getId()).isNotBlank();
+        assertThat(result3.getMembers().size()).isEqualTo(1);
 
 
-        assertThat(uuid).isNotEqualTo(uuid2);
-        assertThat(uuid2).isNotEqualTo(uuid3);
-        assertThat(uuid3).isNotEqualTo(uuid);
+        assertThat(result1.getId()).isNotEqualTo(result2.getId());
+        assertThat(result2.getId()).isNotEqualTo(result3.getId());
+        assertThat(result3.getId()).isNotEqualTo(result1.getId());
     }
 
     @Test
@@ -71,11 +73,11 @@ public class RoomServiceTest {
         when(openViduService.getTokenForSession(any())).thenReturn(UUID.randomUUID().toString());
 
         //- tests
-        final ResponseJoinRoom response = roomService.joinRoom(VALID_ROOM_UUID);
+        final RoomService.JoinRoomTokens response = roomService.joinRoom(VALID_ROOM_UUID);
         assertThat(response).isNotNull();
-        assertThat(response.getRoomName()).isEqualTo(VALID_ROOM_NAME);
-        assertThat(response.getToken()).isNotEmpty();
-        assertThat(response.getSecondToken()).isNotEmpty();
+        assertThat(response.roomName).isEqualTo(VALID_ROOM_NAME);
+        assertThat(response.audioVideoToken).isNotEmpty();
+        assertThat(response.screenShareToken).isNotEmpty();
     }
 
 
