@@ -3,12 +3,12 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.bmw.remotecollab.admin</groupId>
-    <artifactId>viper-service-admin</artifactId>
-    <version>0.1.0-SNAPSHOT</version>
+    <groupId>com.bmw.remotecollab</groupId>
+    <artifactId>remote-collab-api</artifactId>
+    <version>0.1.0</version>
     <packaging>jar</packaging>
 
-    <name>viper-service-admin</name>
+    <name>remote-collab-api</name>
 
     <parent>
         <groupId>org.springframework.boot</groupId>
@@ -19,8 +19,18 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <java.version>1.8</java.version>
-        <start-class>com.bmw.remotecollab.admin.App</start-class>
+        <start-class>com.bmw.remotecollab.App</start-class>
         <docker.image.prefix>remotecollab</docker.image.prefix>
+        <commons-validator.version>1.6</commons-validator.version>
+        <lombok.version>1.18.8</lombok.version>
+        <springfox-swagger2.version>2.9.2</springfox-swagger2.version>
+        <openvidu-java-client.version>2.10.0</openvidu-java-client.version>
+        <aws-java-sdk-dynamodb.version>1.11.589</aws-java-sdk-dynamodb.version>
+        <spring-data-dynamodb.version>5.1.0</spring-data-dynamodb.version>
+        <aws-java-sdk-ses.version>1.11.594</aws-java-sdk-ses.version>
+        <javax.mail-api.version>1.6.1</javax.mail-api.version>
+        <springloaded.version>1.2.8.RELEASE</springloaded.version>
+        <docker-maven-plugin.version>1.2.0</docker-maven-plugin.version>
     </properties>
 
     <dependencies>
@@ -36,6 +46,11 @@
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
 
+        <!--dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-mail</artifactId>
+        </dependency-->
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-security</artifactId>
@@ -49,7 +64,7 @@
         <dependency>
             <groupId>commons-validator</groupId>
             <artifactId>commons-validator</artifactId>
-            <version>1.6</version>
+            <version>${commons-validator.version}</version>
         </dependency>
 
         <dependency>
@@ -70,51 +85,51 @@
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
-			<version>1.18.8</version>
+			<version>${lombok.version}</version>
 			<scope>provided</scope>
 		</dependency>
 
 		<dependency>
 			<groupId>io.springfox</groupId>
 			<artifactId>springfox-swagger2</artifactId>
-			<version>2.9.2</version>
+			<version>${springfox-swagger2.version}</version>
 		</dependency>
 
 		<dependency>
 			<groupId>io.springfox</groupId>
 			<artifactId>springfox-swagger-ui</artifactId>
-			<version>2.9.2</version>
+			<version>${springfox-swagger2.version}</version>
 		</dependency>
 
         <!-- OpenVidu -->
         <dependency>
             <groupId>io.openvidu</groupId>
             <artifactId>openvidu-java-client</artifactId>
-            <version>2.10.0</version>
+            <version>${openvidu-java-client.version}</version>
         </dependency>
 
         <!-- DynamoDB -->
         <dependency>
             <groupId>com.amazonaws</groupId>
             <artifactId>aws-java-sdk-dynamodb</artifactId>
-            <version>1.11.589</version>
+            <version>${aws-java-sdk-dynamodb.version}</version>
         </dependency>
         <dependency>
             <groupId>com.github.derjust</groupId>
             <artifactId>spring-data-dynamodb</artifactId>
-            <version>5.1.0</version>
+            <version>${spring-data-dynamodb.version}</version>
         </dependency>
 
         <!-- AWS SES SDK -->
         <dependency>
             <groupId>com.amazonaws</groupId>
             <artifactId>aws-java-sdk-ses</artifactId>
-            <version>1.11.594</version>
+            <version>${aws-java-sdk-ses.version}</version>
         </dependency>
         <dependency>
             <groupId>javax.mail</groupId>
             <artifactId>javax.mail-api</artifactId>
-            <version>1.6.1</version>
+            <version>${javax.mail-api.version}</version>
         </dependency>
 
         <!-- Template engine for email bodies -->
@@ -122,8 +137,25 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-thymeleaf</artifactId>
         </dependency>
-
     </dependencies>
+
+    <profiles>
+        <profile>
+            <id>local</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <properties>
+                <spring.profiles.active>local</spring.profiles.active>
+            </properties>
+        </profile>
+        <profile>
+            <id>prod</id>
+            <properties>
+                <spring.profiles.active>prod</spring.profiles.active>
+            </properties>
+        </profile>
+    </profiles>
 
     <build>
         <finalName>${project.artifactId}-${project.version}</finalName>
@@ -135,7 +167,7 @@
                     <dependency>
                         <groupId>org.springframework</groupId>
                         <artifactId>springloaded</artifactId>
-                        <version>1.2.8.RELEASE</version>
+                        <version>${springloaded.version}</version>
                     </dependency>
                 </dependencies>
             </plugin>
@@ -165,7 +197,7 @@
             <plugin>
                 <groupId>com.spotify</groupId>
                 <artifactId>docker-maven-plugin</artifactId>
-                <version>1.2.0</version>
+                <version>${docker-maven-plugin.version}</version>
                 <configuration>
                     <imageName>${docker.image.prefix}/${project.artifactId}</imageName>
                     <dockerDirectory>src/main/docker</dockerDirectory>

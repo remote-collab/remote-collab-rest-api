@@ -45,3 +45,6 @@ yarn-error.log*
 *.crt
 *.key
 *.p12
+
+deploy-service.sh
+src/main/resources/application-prod.properties
