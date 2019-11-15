@@ -32,7 +32,7 @@ The following sections explain how to build, run and test this service on a loca
 
 ### Testing the service
 
-The Service's REST resources can now be tested with the integrated [swagger-ui](http://localhost:8080/swagger-ui.html)
+The Service's REST resources can now be tested with the integrated `swagger-ui` under [http://localhost:8080/swagger-ui.html](http://localhost:8080/swagger-ui.html)
 
 ## Run with integrated sample UI  
 
