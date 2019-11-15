@@ -22,7 +22,7 @@ services:
     ports:
       - 8080:8080
     environment:
-      AWS_ACCESS_KEY_ID: 111
-      AWS_SECRET_KEY: 222
+      AWS_ACCESS_KEY_ID: <DUMMY_VALUE_FOR_LOCAL_DYNAMODB>
+      AWS_SECRET_KEY:  <DUMMY_VALUE_FOR_LOCAL_DYNAMODB>
     depends_on:
       - dynamodb-session
