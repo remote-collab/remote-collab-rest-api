@@ -2,12 +2,14 @@ package com.bmw.remotecollab.model;
 
 import com.amazonaws.services.dynamodbv2.datamodeling.*;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.*;
 
 
 @Data
 @DynamoDBTable(tableName = "rooms")
+@NoArgsConstructor
 public class Room {
 
     @DynamoDBHashKey
@@ -22,16 +24,12 @@ public class Room {
     @DynamoDBAttribute(attributeName = "name")
     private String name;
 
-    private final Set<Member> members = new HashSet<>();
+    @DynamoDBAttribute(attributeName = "members")
+    private Set<Member> members = new HashSet<>();
 
     public Room(String name) {
         this.id = UUID.randomUUID().toString();
         this.name = name;
-    }
-
-    // Needed for dynamodb
-    @SuppressWarnings("unused")
-    public Room() {
     }
 
     public void addMember(Member member) {
