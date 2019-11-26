@@ -10,6 +10,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - API V1 needs to be deprecated until it will be removed
 - E-Mail service still needs to be abstracted and implemented for use with arbitrary E-Mail service
 
+## [0.1.1] - 2019-11-26
+
+### Changed
+
+- Renamed DynamoDB store
+
 ## [0.1.0] - 2019-11-15
 
 ### Changed
@@ -30,3 +36,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 [0.0.1]: https://github.com/remote-collab/remote-collab-rest-api/releases/tag/v0.0.1
 [0.1.0]: https://github.com/remote-collab/remote-collab-rest-api/releases/tag/v0.1.0
+[0.1.1]: https://github.com/remote-collab/remote-collab-rest-api/releases/tag/v0.1.1
