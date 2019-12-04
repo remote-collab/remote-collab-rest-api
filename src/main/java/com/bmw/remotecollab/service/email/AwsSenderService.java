@@ -14,8 +14,8 @@ import org.springframework.stereotype.Service;
 @Service
 public class AwsSenderService {
 
-    @Value("rc.email.invite.enabled")
-    private boolean sendInvites;
+
+    private boolean sendInvites = false;
 
     private static final Logger logger = LoggerFactory.getLogger(AwsSenderService.class);
 
