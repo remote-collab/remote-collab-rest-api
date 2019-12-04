@@ -14,6 +14,9 @@ import org.springframework.stereotype.Service;
 @Service
 public class AwsSenderService {
 
+    @Value("rc.email.invite.enabled")
+    private boolean sendInvites;
+
     private static final Logger logger = LoggerFactory.getLogger(AwsSenderService.class);
 
     private AmazonSimpleEmailService sesClient;
@@ -37,37 +40,41 @@ public class AwsSenderService {
     }
 
     public void sendEmail(Email email){
-        if(initialized) {
-            // Construct an object to contain the recipient address.
-            Destination destination = new Destination().withToAddresses(email.getTo());
-            //set cc & bcc addresses
-            if (email.getCc() != null && email.getCc().size() > 0) {
-                destination.withCcAddresses(email.getCc());
-            }
-            if (email.getBcc() != null && email.getBcc().size() > 0) {
-                destination.withBccAddresses(email.getBcc());
-            }
-            // Create the subject and body of the message.
-            Content subject = new Content().withData(email.getSubject());
-            Content textBody = new Content().withData(email.getBody());
-            Body body = email.isHtml() ? new Body().withHtml(textBody) : new Body().withText(textBody);
+        if (sendInvites) {
+            if (initialized) {
+                // Construct an object to contain the recipient address.
+                Destination destination = new Destination().withToAddresses(email.getTo());
+                //set cc & bcc addresses
+                if (email.getCc() != null && email.getCc().size() > 0) {
+                    destination.withCcAddresses(email.getCc());
+                }
+                if (email.getBcc() != null && email.getBcc().size() > 0) {
+                    destination.withBccAddresses(email.getBcc());
+                }
+                // Create the subject and body of the message.
+                Content subject = new Content().withData(email.getSubject());
+                Content textBody = new Content().withData(email.getBody());
+                Body body = email.isHtml() ? new Body().withHtml(textBody) : new Body().withText(textBody);
 
-            // Create a message with the specified subject and body.
-            Message message = new Message().withSubject(subject).withBody(body);
-            // Assemble the email.
-            SendEmailRequest request = new SendEmailRequest().withSource(email.getFrom())
-                    .withReplyToAddresses(email.getFrom())
-                    .withDestination(destination)
-                    .withMessage(message);
-            // Send the email.
-            try {
-                SendEmailResult result = sesClient.sendEmail(request);
-                logger.info("Sent email via aws ses service. ID={}", result.getMessageId());
-            } catch (SdkClientException aex){
-                logger.warn("Email could not be send. {}", aex.getMessage());
+                // Create a message with the specified subject and body.
+                Message message = new Message().withSubject(subject).withBody(body);
+                // Assemble the email.
+                SendEmailRequest request = new SendEmailRequest().withSource(email.getFrom())
+                        .withReplyToAddresses(email.getFrom())
+                        .withDestination(destination)
+                        .withMessage(message);
+                // Send the email.
+                try {
+                    SendEmailResult result = sesClient.sendEmail(request);
+                    logger.info("Sent email via aws ses service. ID={}", result.getMessageId());
+                } catch (SdkClientException aex) {
+                    logger.warn("Email could not be send. {}", aex.getMessage());
+                }
+            } else {
+                logger.info("No email will be sent since the client could not be initialized.");
             }
         } else {
-            logger.info("No email will be sent since the client could not be initialized.");
+            logger.info("Not sending email due to configuration 'rc.email.invite.enabled'");
         }
     }
 
