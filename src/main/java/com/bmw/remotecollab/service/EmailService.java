@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -38,21 +39,25 @@ public class EmailService {
     }
 
     void sendInvitationEmail(final Room room) {
-        logger.info("Sending invitation emails for Room: {} - Members: {}", room.getId(), room.getMembers());
+        final List<Member> members = room.getMembers();
 
-        final Set<Member> members = room.getMembers();
+        if(!members.isEmpty()) {
+            logger.info("Sending invitation emails for Room: {} - Members: {}", room.getId(), room.getMembers());
 
-        String subject = "Attend online meeting";
-        String body = buildBody(room, INVITE_TEMPLATE);
+            String subject = "Attend online meeting";
+            String body = buildBody(room, INVITE_TEMPLATE);
 
-        Email.EmailBuilder emailBuilder = Email.builder();
-        emailBuilder.from(new From(this.fromEmail, this.fromEmailName));
-        emailBuilder.to(members.stream().map(Member::getEmail).collect(Collectors.toList()));
-        emailBuilder.subject(subject);
-        emailBuilder.body(body);
-        emailBuilder.html(true);
+            Email.EmailBuilder emailBuilder = Email.builder();
+            emailBuilder.from(new From(this.fromEmail, this.fromEmailName));
+            emailBuilder.to(members.stream().map(Member::getEmail).collect(Collectors.toList()));
+            emailBuilder.subject(subject);
+            emailBuilder.body(body);
+            emailBuilder.html(true);
 
-        awsSenderService.sendEmail(emailBuilder.build());
+            awsSenderService.sendEmail(emailBuilder.build());
+        } else {
+            logger.info("Nothing to send. No emails set for room.");
+        }
     }
 
     private String buildBody(Room room, @SuppressWarnings("SameParameterValue") String mailTemplate) {

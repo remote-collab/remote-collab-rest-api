@@ -6,7 +6,9 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.lang.NonNull;
+import org.springframework.lang.Nullable;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Data
@@ -20,6 +22,7 @@ public class RequestNewRoom {
 
     @ApiModelProperty(value = "An optional list of email addresses you want to add initially to the new room.")
     @EmailList
-    private List<String> emails;
+    @Nullable
+    private List<String> emails = new ArrayList<>();
 
 }

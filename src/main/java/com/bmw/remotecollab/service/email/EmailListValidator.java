@@ -1,6 +1,7 @@
 package com.bmw.remotecollab.service.email;
 
 import org.apache.commons.validator.routines.EmailValidator;
+import org.springframework.util.StringUtils;
 
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
@@ -26,7 +27,11 @@ public class EmailListValidator implements ConstraintValidator<EmailList, List<S
         if(!emptyListIsValid && (emails == null || emails.isEmpty())) {
             return false;
         }
-        return emails == null || emails.stream().allMatch(ev::isValid);
+        return emails == null || emails.stream().allMatch(this::isValidIgnoreEmpty);
+    }
+
+    private boolean isValidIgnoreEmpty(String value){
+        return StringUtils.isEmpty(value) || this.ev.isValid(value);
     }
 
 }

@@ -14,6 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 import org.springframework.validation.annotation.Validated;
 
 import java.util.List;
@@ -46,7 +47,11 @@ public class RoomService {
         Room room = new Room(roomName);
 
         if (emails != null) {
-            emails.forEach(s -> room.addMember(new Member(s)));
+            emails.forEach(s -> {
+                if(!StringUtils.isEmpty(s)){
+                    room.addMember(new Member(s));
+                }
+            });
         }
 
         roomRepository.save(room);

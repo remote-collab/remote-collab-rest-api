@@ -25,7 +25,7 @@ public class Room {
     private String name;
 
     @DynamoDBAttribute(attributeName = "members")
-    private Set<Member> members = new HashSet<>();
+    private List<Member> members = new ArrayList<>();
 
     public Room(String name) {
         this.id = UUID.randomUUID().toString();
