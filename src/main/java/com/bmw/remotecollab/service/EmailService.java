@@ -14,8 +14,6 @@ import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 
 import java.util.Collection;
-import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -62,8 +60,7 @@ public class EmailService {
 
             Email.EmailBuilder emailBuilder = Email.builder();
             emailBuilder.from(new From(this.fromEmail, this.fromEmailName));
-            List<String> jhg = newMembers.stream().map(Member::getEmail).collect(Collectors.toList());
-            emailBuilder.to(jhg);
+            emailBuilder.to(newMembers.stream().map(Member::getEmail).collect(Collectors.toList()));
             emailBuilder.subject(subject);
             emailBuilder.body(body);
             emailBuilder.html(true);
