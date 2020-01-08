@@ -2,6 +2,7 @@ package com.bmw.remotecollab.service;
 
 import com.bmw.remotecollab.TestHelper;
 import com.bmw.remotecollab.dynamodb.RoomRepository;
+import com.bmw.remotecollab.model.Member;
 import com.bmw.remotecollab.model.Room;
 import com.bmw.remotecollab.rest.exception.ResourceNotFoundException;
 
@@ -15,10 +16,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import javax.validation.ConstraintViolationException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 import static com.bmw.remotecollab.TestHelper.*;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -49,12 +47,12 @@ public class RoomServiceTest {
     public void createNewRoom() {
         Room result1 = roomService.createNewRoom(VALID_ROOM_NAME, null);
         assertThat(result1.getId()).isNotBlank();
-        assertThat(result1.getMembers().size()).isEqualTo(0);
+        assertThat(result1.getMembers()).isNull();
 
         List<String> emails = new ArrayList<>();
         Room result2 = roomService.createNewRoom(VALID_ROOM_NAME, emails);
         assertThat(result2.getId()).isNotBlank();
-        assertThat(result2.getMembers().size()).isEqualTo(0);
+        assertThat(result1.getMembers()).isNull();
 
         emails.add("any@email.com");
         Room result3 = roomService.createNewRoom(VALID_ROOM_NAME, emails);
@@ -115,6 +113,7 @@ public class RoomServiceTest {
     @Test
     public void sendUserInvitation_allValid() {
         final ArgumentCaptor<Room> roomCaptor = ArgumentCaptor.forClass(Room.class);
+        final ArgumentCaptor<Collection<Member>> membersCaptor = ArgumentCaptor.forClass(Collection.class);
 
         List<String> emails = new ArrayList<>();
         emails.add("valid@email.com");
@@ -126,12 +125,15 @@ public class RoomServiceTest {
         verify(roomRepository).save(roomCaptor.capture());
         assertThat(roomCaptor.getValue().getMembers().size()).isEqualTo(3);
 
-        verify(emailService).sendInvitationEmail(roomCaptor.capture());
+        verify(emailService).sendInvitationEmail(roomCaptor.capture(), membersCaptor.capture());
         final Room usedRoom = roomCaptor.getValue();
         assertThat(usedRoom.getId()).isNotEmpty();
         //only three receivers because one mail is a duplicate
         assertThat(usedRoom.getMembers().size()).isEqualTo(3);
         assertThat(usedRoom.getName()).isEqualTo(VALID_ROOM_NAME);
+
+        final Collection<Member> actualNewMembers = membersCaptor.getValue();
+        assertThat(actualNewMembers.size()).isEqualTo(3);
     }
 
     @Test

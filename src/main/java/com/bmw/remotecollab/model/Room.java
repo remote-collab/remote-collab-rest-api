@@ -25,7 +25,7 @@ public class Room {
     private String name;
 
     @DynamoDBAttribute(attributeName = "members")
-    private Set<Member> members = new HashSet<>();
+    private List<Member> members;
 
     public Room(String name) {
         this.id = UUID.randomUUID().toString();
@@ -33,10 +33,15 @@ public class Room {
     }
 
     public void addMember(Member member) {
-        this.members.add(member);
+        if(members == null) {
+            members = new ArrayList<>();
+        }
+        if(!members.contains(member)) {
+            this.members.add(member);
+        }
     }
 
     public void addMembers(Collection<Member> members) {
-        this.members.addAll(members);
+        members.forEach(this::addMember);
     }
 }

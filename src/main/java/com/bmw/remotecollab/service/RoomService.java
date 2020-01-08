@@ -91,9 +91,9 @@ public class RoomService {
 
         roomRepository.findById(roomUUID)
                 .ifPresent(r -> {
-                    emailService.sendInvitationEmail(r);
                     r.addMembers(newMembers);
                     roomRepository.save(r);
+                    emailService.sendInvitationEmail(r, newMembers);
                 });
     }
 
