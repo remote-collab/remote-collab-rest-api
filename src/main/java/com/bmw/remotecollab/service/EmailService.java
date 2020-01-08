@@ -13,6 +13,8 @@ import org.springframework.stereotype.Service;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -37,22 +39,37 @@ public class EmailService {
         this.templateEngine = templateEngine;
     }
 
-    void sendInvitationEmail(final Room room) {
-        logger.info("Sending invitation emails for Room: {} - Members: {}", room.getId(), room.getMembers());
+    /**
+     * Sends Invitation Emails to all existing Members of the given room
+     * @param room room to send mails for
+     */
+    void sendInvitationEmail(Room room) {
+        sendInvitationEmail(room, room.getMembers());
+    }
 
-        final Set<Member> members = room.getMembers();
+    /**
+     * Sends invitation emails only to new room members given.
+     * @param room room to send mails for
+     * @param newMembers new members of the room to be invited
+     */
+    void sendInvitationEmail(final Room room, final Collection<Member> newMembers) {
+        logger.info("Sending invitation emails for Room: {} - Members: {}", room.getId(), newMembers);
 
-        String subject = "Attend online meeting";
-        String body = buildBody(room, INVITE_TEMPLATE);
+        if (newMembers != null && !newMembers.isEmpty()) {
 
-        Email.EmailBuilder emailBuilder = Email.builder();
-        emailBuilder.from(new From(this.fromEmail, this.fromEmailName));
-        emailBuilder.to(members.stream().map(Member::getEmail).collect(Collectors.toList()));
-        emailBuilder.subject(subject);
-        emailBuilder.body(body);
-        emailBuilder.html(true);
+            String subject = "Attend online meeting";
+            String body = buildBody(room, INVITE_TEMPLATE);
 
-        awsSenderService.sendEmail(emailBuilder.build());
+            Email.EmailBuilder emailBuilder = Email.builder();
+            emailBuilder.from(new From(this.fromEmail, this.fromEmailName));
+            List<String> jhg = newMembers.stream().map(Member::getEmail).collect(Collectors.toList());
+            emailBuilder.to(jhg);
+            emailBuilder.subject(subject);
+            emailBuilder.body(body);
+            emailBuilder.html(true);
+
+            awsSenderService.sendEmail(emailBuilder.build());
+        }
     }
 
     private String buildBody(Room room, @SuppressWarnings("SameParameterValue") String mailTemplate) {
