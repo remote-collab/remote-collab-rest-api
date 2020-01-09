@@ -76,7 +76,6 @@ public class RoomServiceTest {
         assertThat(response).isNotNull();
         assertThat(response.roomName).isEqualTo(VALID_ROOM_NAME);
         assertThat(response.audioVideoToken).isNotEmpty();
-        assertThat(response.screenShareToken).isNotEmpty();
     }
 
 

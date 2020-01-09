@@ -67,9 +67,31 @@ public class RoomService {
                 try {
                     logger.debug("Created session with id: {}", session.getSessionId());
                     String audioVideoToken = openViduService.getTokenForSession(session);
+                    return new JoinRoomTokens(room.getName(), audioVideoToken, session.getSessionId());
+                } catch (OpenViduJavaClientException | OpenViduHttpException e) {
+                    logger.warn("Problem calling openvidu server.", e);
+                    throw new OpenViduException("Problem calling openvidu server.");
+                }
+            } else {
+                throw new ResourceNotFoundException("OpenVidu connection not working.");
+            }
+        } else {
+            throw new ResourceNotFoundException("Room does not exists. RoomUUID: " + roomUUID);
+        }
+    }
+
+    public ScreenToken requestSessionToken(String roomUUID) throws OpenViduException, ResourceNotFoundException {
+        final Optional<Room> roomOpt = roomRepository.findById(roomUUID);
+        if (roomOpt.isPresent()) {
+            Room room = roomOpt.get();
+            logger.debug("Found {}", room);
+            Session session = openViduService.getExistingSession(room.getId());
+            if (session != null) {
+                try {
+                    logger.debug("Created session with id: {}", session.getSessionId());
 
                     String screenShareToken = openViduService.getTokenForSession(session);
-                    return new JoinRoomTokens(room.getName(), audioVideoToken, screenShareToken, session.getSessionId());
+                    return new ScreenToken(screenShareToken);
                 } catch (OpenViduJavaClientException | OpenViduHttpException e) {
                     logger.warn("Problem calling openvidu server.", e);
                     throw new OpenViduException("Problem calling openvidu server.");
@@ -102,7 +124,11 @@ public class RoomService {
     public static class JoinRoomTokens {
         public final String roomName;
         public final String audioVideoToken;
-        public final String screenShareToken;
         public final String sessionId;
+    }
+
+    @RequiredArgsConstructor
+    public static class ScreenToken {
+        public final String screenShareToken;
     }
 }

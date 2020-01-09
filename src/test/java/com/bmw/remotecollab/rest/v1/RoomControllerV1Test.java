@@ -56,7 +56,7 @@ public class RoomControllerV1Test {
         Mockito.when(roomService.doesRoomExist(argThat(isInvalid()))).thenReturn(false);
 
         Mockito.when(roomService.joinRoom(VALID_ROOM_UUID))
-            .thenReturn(new RoomService.JoinRoomTokens(VALID_ROOM_NAME, VALID_AV_TOKEN, VALID_SCREEN_TOKEN, VALID_SESSION));
+            .thenReturn(new RoomService.JoinRoomTokens(VALID_ROOM_NAME, VALID_AV_TOKEN, VALID_SESSION));
         Mockito.when(roomService.joinRoom(argThat(isInvalid()))).thenThrow(new ResourceNotFoundException(""));
 
         Mockito.when(roomService.createNewRoom(argThat(isValid()), any())).thenReturn(new Room(VALID_ROOM_NAME));

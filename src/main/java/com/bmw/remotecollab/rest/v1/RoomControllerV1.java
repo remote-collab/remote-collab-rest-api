@@ -90,7 +90,6 @@ public class RoomControllerV1 {
                 new ResponseJoinRoom(
                         tokenInfo.roomName,
                         tokenInfo.audioVideoToken,
-                        tokenInfo.screenShareToken,
                         tokenInfo.sessionId));
     }
 

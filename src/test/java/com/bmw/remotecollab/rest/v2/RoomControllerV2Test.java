@@ -1,6 +1,5 @@
 package com.bmw.remotecollab.rest.v2;
 
-import com.bmw.remotecollab.dynamodb.RoomRepository;
 import com.bmw.remotecollab.model.Room;
 import com.bmw.remotecollab.rest.exception.OpenViduException;
 import com.bmw.remotecollab.rest.exception.ResourceNotFoundException;
@@ -47,8 +46,6 @@ public class RoomControllerV2Test {
     private MockMvc mockMvc;
 
     @MockBean
-    private RoomRepository roomRepository;
-    @MockBean
     private RoomService roomService;
 
 
@@ -58,10 +55,13 @@ public class RoomControllerV2Test {
         Mockito.when(roomService.doesRoomExist(argThat(isInvalid()))).thenReturn(false);
 
         Mockito.when(roomService.joinRoom(VALID_ROOM_UUID))
-                .thenReturn(new RoomService.JoinRoomTokens(VALID_ROOM_NAME, VALID_AV_TOKEN, VALID_SCREEN_TOKEN, VALID_SESSION));
+                .thenReturn(new RoomService.JoinRoomTokens(VALID_ROOM_NAME, VALID_AV_TOKEN, VALID_SESSION));
         Mockito.when(roomService.joinRoom(argThat(isInvalid()))).thenThrow(new ResourceNotFoundException(""));
 
         Mockito.when(roomService.createNewRoom(argThat(isValid()), any())).thenReturn(new Room(VALID_ROOM_NAME));
+
+        Mockito.when(roomService.requestSessionToken("invalidRoomUUID")).thenThrow(new ResourceNotFoundException(""));
+        Mockito.when(roomService.requestSessionToken(VALID_ROOM_UUID)).thenReturn(new RoomService.ScreenToken(VALID_ROOM_NAME));
     }
 
     @Test
@@ -158,11 +158,20 @@ public class RoomControllerV2Test {
                 .andExpect(ResultMatcher.matchAll(
                         jsonPath("roomName").value(VALID_ROOM_NAME),
                         jsonPath("audioVideoToken").value(VALID_AV_TOKEN),
-                        jsonPath("screenShareToken").value(VALID_SCREEN_TOKEN),
                         jsonPath("sessionId").value(VALID_SESSION)
                 ));
 
         post("rooms/{roomUUID}/join", status().isNotFound(), "invalidRoomUUID");
+    }
+
+   //  @Test
+    public void testSreenToken() throws Exception {
+        post("rooms/{roomUUID}/screentoken", status().isOk(), VALID_ROOM_UUID)
+                .andExpect(ResultMatcher.matchAll(
+                        jsonPath("screenShareToken").value(VALID_SCREEN_TOKEN)
+                ));
+
+        post("rooms/{roomUUID}/screentoken", status().isNotFound(), "invalidRoomUUID");
     }
 
     private ResultActions post(String path, ResultMatcher expectedResult, Object... pathParams) throws Exception {

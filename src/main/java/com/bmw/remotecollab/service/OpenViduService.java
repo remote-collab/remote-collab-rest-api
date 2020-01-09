@@ -17,8 +17,6 @@ public class OpenViduService {
 
     private final OpenVidu openVidu;
 
-    private Map<String, Session> sessionStorageCache = new ConcurrentHashMap<>();
-
     public OpenViduService(@Value("${openvidu.secret}") String secret, @Value("${openvidu.url}") String openviduUrl) {
         this.openVidu = new OpenVidu(openviduUrl, secret);
     }
@@ -29,11 +27,18 @@ public class OpenViduService {
         Session session = null;
         try {
             session = this.openVidu.createSession(customProperties.build());
-            this.sessionStorageCache.put(session.getSessionId(), session);
         } catch (OpenViduJavaClientException | OpenViduHttpException e) {
             logger.warn("Problem calling openvidu server.", e);
         }
         return session;
+    }
+
+    public Session getExistingSession(String sessionId){
+        Session foundSession = this.openVidu.getActiveSessions().stream().filter(session -> session.getSessionId().equals(sessionId))
+                .findFirst()
+                .get();
+        logger.info("Found session {}", foundSession.getSessionId());
+        return foundSession;
     }
 
     public String getTokenForSession(Session session) throws OpenViduJavaClientException, OpenViduHttpException {
@@ -49,10 +54,7 @@ public class OpenViduService {
             if (HttpStatus.NOT_FOUND.value() == e2.getStatus()) {
                 // Invalid sessionId (user left unexpectedly). Session object is not valid
                 // anymore. Must clean invalid session and create a new one
-                Session removedSession = this.sessionStorageCache.remove(session.getSessionId());
-                session = this.openVidu.createSession(removedSession.getProperties());
-                this.sessionStorageCache.put(session.getSessionId(), session);
-
+                session = this.openVidu.createSession(session.getProperties());
                 token = session.generateToken(tokenOpts);
             }
         }
