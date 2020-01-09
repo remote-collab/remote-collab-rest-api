@@ -15,9 +15,6 @@ public class ResponseJoinRoom {
     @ApiModelProperty(value = "The webRTC token to share your audio and video (Camera) with the room.")
     private String audioVideoToken;
 
-    @ApiModelProperty(value = "The webRTC token to share your screen with the room.")
-    private String screenShareToken;
-
     @ApiModelProperty(value = "The webRTC session id to join the room.")
     private String sessionId;
 }

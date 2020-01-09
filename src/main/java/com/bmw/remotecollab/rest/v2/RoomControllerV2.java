@@ -7,6 +7,7 @@ import com.bmw.remotecollab.rest.v2.request.RequestInviteUser;
 import com.bmw.remotecollab.rest.v2.request.RequestNewRoom;
 import com.bmw.remotecollab.rest.v2.response.ResponseJoinRoom;
 import com.bmw.remotecollab.rest.v2.response.ResponseNewRoom;
+import com.bmw.remotecollab.rest.v2.response.ResponseScreenToken;
 import com.bmw.remotecollab.service.OpenViduService;
 import com.bmw.remotecollab.service.RoomService;
 import io.swagger.annotations.Api;
@@ -87,8 +88,16 @@ public class RoomControllerV2 {
                 new ResponseJoinRoom(
                         tokenInfo.roomName,
                         tokenInfo.audioVideoToken,
-                        tokenInfo.screenShareToken,
                         tokenInfo.sessionId));
+    }
+
+    @ApiOperation(value = "Get new screen token for existing room.",
+            notes = "Via this endpoint, you can acquire tokens to join a webRTC session for an existing room.")
+    @PostMapping("/rooms/{roomUUID}/screentoken")
+    public ResponseEntity<ResponseScreenToken> getScreenToken(@PathVariable("roomUUID") final String roomUUID) throws ResourceNotFoundException, OpenViduException {
+        logger.debug("V2: Get new screentoken for room {}", roomUUID);
+        final RoomService.ScreenToken tokenInfo = roomService.requestSessionToken(roomUUID);
+        return ResponseEntity.ok(new ResponseScreenToken(tokenInfo.screenShareToken));
     }
 
     //TODO: replace with prometheus / actuator
