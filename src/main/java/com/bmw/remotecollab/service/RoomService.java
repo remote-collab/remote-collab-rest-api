@@ -55,7 +55,7 @@ public class RoomService {
     }
 
 
-    public JoinRoomTokens joinRoom(String roomUUID) throws OpenViduException, ResourceNotFoundException {
+    public JoinRoomToken joinRoom(String roomUUID) throws OpenViduException, ResourceNotFoundException {
         logger.debug(roomUUID);
 
         final Optional<Room> roomOpt = roomRepository.findById(roomUUID);
@@ -67,7 +67,7 @@ public class RoomService {
                 try {
                     logger.debug("Created session with id: {}", session.getSessionId());
                     String audioVideoToken = openViduService.getTokenForSession(session);
-                    return new JoinRoomTokens(room.getName(), audioVideoToken, session.getSessionId());
+                    return new JoinRoomToken(room.getName(), audioVideoToken, session.getSessionId());
                 } catch (OpenViduJavaClientException | OpenViduHttpException e) {
                     logger.warn("Problem calling openvidu server.", e);
                     throw new OpenViduException("Problem calling openvidu server.");
@@ -88,8 +88,6 @@ public class RoomService {
             Session session = openViduService.getExistingSession(room.getId());
             if (session != null) {
                 try {
-                    logger.debug("Created session with id: {}", session.getSessionId());
-
                     String screenShareToken = openViduService.getTokenForSession(session);
                     return new ScreenToken(screenShareToken);
                 } catch (OpenViduJavaClientException | OpenViduHttpException e) {
@@ -121,7 +119,7 @@ public class RoomService {
 
 
     @RequiredArgsConstructor
-    public static class JoinRoomTokens {
+    public static class JoinRoomToken {
         public final String roomName;
         public final String audioVideoToken;
         public final String sessionId;

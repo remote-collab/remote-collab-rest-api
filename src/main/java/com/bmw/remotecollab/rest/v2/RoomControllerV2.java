@@ -83,7 +83,7 @@ public class RoomControllerV2 {
     @PostMapping("/rooms/{roomUUID}/join")
     public ResponseEntity<ResponseJoinRoom> joinRoom(@PathVariable("roomUUID") final String roomUUID) throws ResourceNotFoundException, OpenViduException {
         logger.debug("V2: Join room {}", roomUUID);
-        final RoomService.JoinRoomTokens tokenInfo = roomService.joinRoom(roomUUID);
+        final RoomService.JoinRoomToken tokenInfo = roomService.joinRoom(roomUUID);
         return ResponseEntity.ok(
                 new ResponseJoinRoom(
                         tokenInfo.roomName,
@@ -93,7 +93,7 @@ public class RoomControllerV2 {
 
     @ApiOperation(value = "Get new screen token for existing room.",
             notes = "Via this endpoint, you can acquire tokens to join a webRTC session for an existing room.")
-    @PostMapping("/rooms/{roomUUID}/screentoken")
+    @GetMapping("/rooms/{roomUUID}/screentoken")
     public ResponseEntity<ResponseScreenToken> getScreenToken(@PathVariable("roomUUID") final String roomUUID) throws ResourceNotFoundException, OpenViduException {
         logger.debug("V2: Get new screentoken for room {}", roomUUID);
         final RoomService.ScreenToken tokenInfo = roomService.requestSessionToken(roomUUID);

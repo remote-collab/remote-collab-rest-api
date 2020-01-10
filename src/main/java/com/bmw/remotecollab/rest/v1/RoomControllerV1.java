@@ -85,7 +85,7 @@ public class RoomControllerV1 {
     public ResponseEntity<ResponseJoinRoom> joinRoom(@RequestBody RequestJoinRoom requestJoinRoom) throws ResourceNotFoundException, OpenViduException {
         String roomUUID = requestJoinRoom.getRoomUUID();
         logger.debug("V1: Join room {}", roomUUID);
-        final RoomService.JoinRoomTokens tokenInfo = roomService.joinRoom(roomUUID);
+        final RoomService.JoinRoomToken tokenInfo = roomService.joinRoom(roomUUID);
         return ResponseEntity.ok(
                 new ResponseJoinRoom(
                         tokenInfo.roomName,
