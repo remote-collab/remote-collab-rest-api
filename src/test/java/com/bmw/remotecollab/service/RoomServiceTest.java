@@ -72,7 +72,7 @@ public class RoomServiceTest {
         when(openViduService.getTokenForSession(any())).thenReturn(UUID.randomUUID().toString());
 
         //- tests
-        final RoomService.JoinRoomTokens response = roomService.joinRoom(VALID_ROOM_UUID);
+        final RoomService.JoinRoomToken response = roomService.joinRoom(VALID_ROOM_UUID);
         assertThat(response).isNotNull();
         assertThat(response.roomName).isEqualTo(VALID_ROOM_NAME);
         assertThat(response.audioVideoToken).isNotEmpty();

@@ -24,7 +24,7 @@ services:
     ports:
       - 8080:8080
     environment:
-      AWS_ACCESS_KEY_ID: AKIAR2T7SJUE2A2J5XQM
-      AWS_SECRET_KEY:  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
+      AWS_ACCESS_KEY_ID: 111
+      AWS_SECRET_KEY:  222
     depends_on:
       - dynamodb-room-store
