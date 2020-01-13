@@ -23,6 +23,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+
 import java.util.ArrayList;
 
 import static com.bmw.remotecollab.TestHelper.*;
@@ -160,7 +161,6 @@ public class RoomControllerV1Test {
             .andExpect(ResultMatcher.matchAll(
                 jsonPath("roomName").value(VALID_ROOM_NAME),
                 jsonPath("token").value(VALID_AV_TOKEN),
-                jsonPath("secondToken").value(VALID_SCREEN_TOKEN),
                 jsonPath("sessionId").value(VALID_SESSION)
             ));
 
