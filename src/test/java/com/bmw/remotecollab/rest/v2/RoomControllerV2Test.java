@@ -1,5 +1,6 @@
 package com.bmw.remotecollab.rest.v2;
 
+import com.bmw.remotecollab.dynamodb.RoomRepository;
 import com.bmw.remotecollab.model.Room;
 import com.bmw.remotecollab.rest.exception.OpenViduException;
 import com.bmw.remotecollab.rest.exception.ResourceNotFoundException;
@@ -25,7 +26,6 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import java.util.ArrayList;
 
-import static com.bmw.remotecollab.TestHelper.isInvalid;
 import static com.bmw.remotecollab.TestHelper.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsString;
@@ -45,6 +45,8 @@ public class RoomControllerV2Test {
     @Autowired
     private MockMvc mockMvc;
 
+    @MockBean
+    private RoomRepository roomRepository;
     @MockBean
     private RoomService roomService;
 
