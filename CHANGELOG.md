@@ -10,6 +10,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - API V1 needs to be deprecated until it will be removed
 - E-Mail service still needs to be abstracted and implemented for use with arbitrary E-Mail service
 
+## [0.2.0] - 2020-01-28
+
+### Changed
+
+- Added new Endpoint to get OpenVidu Session Token
+- Fix errors in user validation and user invitation 
+
 ## [0.1.1] - 2019-11-26
 
 ### Changed
