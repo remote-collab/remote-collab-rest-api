@@ -1,6 +1,6 @@
 FROM openjdk:8-jre-alpine
 
-ENV ENABLE_DATADOG=true
+ENV ENABLE_DATADOG=false
 
 ENV SERVICE_NAME remote-collab-api
 
